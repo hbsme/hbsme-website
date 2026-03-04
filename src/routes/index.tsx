@@ -498,7 +498,16 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
               <div className="flex items-center gap-2 min-w-0">
                 {oppLogo ? (
                   <img src={oppLogo} alt="" className={`w-7 h-7 object-contain shrink-0 ${t.oppLogoBg} rounded-full p-0.5`}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                    onError={(e) => {
+                      const img = e.currentTarget
+                      const parent = img.parentNode
+                      if (parent) {
+                        const div = document.createElement('div')
+                        div.className = `w-7 h-7 rounded-full ${t.oppPlaceholder} shrink-0 flex items-center justify-center text-xs font-bold text-gray-400`
+                        div.textContent = teamLabel(oppTeam).replace(/^(HBC|HB|AS|US|SP|ST|STADE|UNION)\s+/i, '').substring(0, 2).toUpperCase()
+                        parent.replaceChild(div, img)
+                      }
+                    }} />
                 ) : (
                   <div className={`w-7 h-7 rounded-full ${t.oppPlaceholder} shrink-0`} />
                 )}
