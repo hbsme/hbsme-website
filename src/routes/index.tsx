@@ -292,10 +292,16 @@ function Home() {
             <span className="text-rose-500">Saint-Médard</span><br />
             d'Eyrans
           </h1>
-          <p className="text-zinc-400 text-lg max-w-lg leading-relaxed">
-            Le HBSME regroupe des équipes de tous âges, du baby-handball aux seniors.
-            Fondé dans le cœur de la Gironde, le club forme et compétit en championnat
-            départemental depuis de nombreuses saisons.
+          <p className="text-zinc-400 text-base max-w-lg leading-relaxed mb-3">
+            L'histoire du HBSME débute avec la construction d'une nouvelle salle multisports
+            dans notre village. C'est l'idée de Patrice Ragon, habitant de la commune et
+            joueur de longue date, de créer une association de handball avec quelques amis.
+            C'est ainsi que naît le club.
+          </p>
+          <p className="text-zinc-500 text-base max-w-lg leading-relaxed">
+            Depuis 2014, le club a grandi grâce à l'implication de tous — bénévoles, parents,
+            licenciés, dirigeants, partenaires, entraîneurs. Un club axé sur la formation
+            du joueur, avec la convivialité comme identité.
           </p>
         </div>
         <div className="shrink-0">
