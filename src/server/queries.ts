@@ -4,7 +4,7 @@ import { db } from '../db'
 import { ffhbMatch, ffhbTeam, licencee } from '../db/schema'
 
 const CLUB = 'HANDBALL SAINT MEDARD D\'EYRANS'
-const LOGO_BASE = 'https://media.ffhandball.fr/logos/'
+const LOGO_BASE = 'https://media-logos-clubs.ffhandball.fr/64/'
 const EPOCH_FILTER = new Date('2000-01-01')
 
 export function formatCompetition(raw: string): string {
