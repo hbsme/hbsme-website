@@ -11,9 +11,6 @@ const config = defineConfig({
   server: {
     allowedHosts: ['dev.hbsme.fr'],
   },
-  ssr: {
-    external: ['crypto', 'fs', 'path', 'os'],
-  },
   plugins: [
     devtools(),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),

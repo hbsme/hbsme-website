@@ -1,8 +1,3 @@
-import { createHash } from 'crypto'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { tmpdir } from 'os'
-import { join } from 'path'
-
 // ─── types ───────────────────────────────────────────────────────────────────
 
 type Match = {
@@ -23,25 +18,32 @@ type CacheEntry = {
 
 // ─── cache ───────────────────────────────────────────────────────────────────
 
-const CACHE_FILE = join(tmpdir(), 'hbsme_weekend_summary.json')
+function getCacheFile(): string {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const os = require('os') as typeof import('os')
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const path = require('path') as typeof import('path')
+  return path.join(os.tmpdir(), 'hbsme_weekend_summary.json')
+}
 
-/**
- * Hash stable de l'ensemble des matchs passés en paramètre.
- * Clé = sha256(sorted matchIds + scores) → invalide si les données changent.
- */
 function computeHash(currentWeek: Match[], history: Match[]): string {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const crypto = require('crypto') as typeof import('crypto')
   const all = [...currentWeek, ...history]
   const stable = all
     .map(m => `${m.matchId ?? ''}:${m.score1 ?? ''}:${m.score2 ?? ''}`)
     .sort()
     .join('|')
-  return createHash('sha256').update(stable).digest('hex').slice(0, 16)
+  return crypto.createHash('sha256').update(stable).digest('hex').slice(0, 16)
 }
 
 function readCache(): CacheEntry | null {
   try {
-    if (!existsSync(CACHE_FILE)) return null
-    return JSON.parse(readFileSync(CACHE_FILE, 'utf-8')) as CacheEntry
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require('fs') as typeof import('fs')
+    const file = getCacheFile()
+    if (!fs.existsSync(file)) return null
+    return JSON.parse(fs.readFileSync(file, 'utf-8')) as CacheEntry
   } catch {
     return null
   }
@@ -49,7 +51,9 @@ function readCache(): CacheEntry | null {
 
 function writeCache(entry: CacheEntry): void {
   try {
-    writeFileSync(CACHE_FILE, JSON.stringify(entry), 'utf-8')
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require('fs') as typeof import('fs')
+    fs.writeFileSync(getCacheFile(), JSON.stringify(entry), 'utf-8')
   } catch {
     // non-critique
   }
