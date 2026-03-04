@@ -339,45 +339,77 @@ function UpcomingMatchGroups({ matches }: { matches: MatchRow[] }) {
     <div className="space-y-12">
       {groups.map(({ label, highlight, matches: ms }) => (
         <div key={label}>
-          {highlight ? (
-            <AirportBoard label={label} matches={ms} />
-          ) : (
-            <>
-              <div className="flex items-center gap-3 mb-4">
-                <h3 className="text-sm font-bold text-gray-400 tracking-wide uppercase">{label}</h3>
-                <div className="flex-1 h-px bg-gray-100" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {ms.map((m) => <MatchCard key={m.id} match={m} variant="upcoming" />)}
-              </div>
-            </>
-          )}
+          <AirportBoard label={label} matches={ms} dark={highlight} />
         </div>
       ))}
     </div>
   )
 }
 
-function AirportBoard({ label, matches }: { label: string; matches: MatchRow[] }) {
+function AirportBoard({ label, matches, dark = false }: { label: string; matches: MatchRow[]; dark?: boolean }) {
   // Extraire la date du premier match pour l'afficher dans le header
   const firstDate = matches[0]?.date ? new Date(matches[0].date) : null
   const dateLabel = firstDate
     ? firstDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
     : label
 
+  const t = dark ? {
+    wrap:       'shadow-2xl',
+    header:     'bg-slate-900',
+    headerText: 'text-white',
+    headerSub:  'text-slate-400',
+    dot:        'bg-pink-500',
+    colHead:    'bg-slate-800 text-slate-500',
+    rowEven:    'bg-slate-950',
+    rowOdd:     'bg-slate-900/50',
+    rowHover:   'hover:bg-slate-800/80',
+    divider:    'divide-slate-800/60',
+    time:       'text-amber-400',
+    catText:    'text-pink-400',
+    catBg:      'bg-pink-950/60 border-pink-800/50',
+    teamText:   'text-white',
+    oppText:    'text-slate-300',
+    oppLogoBg:  'bg-white/5',
+    oppPlaceholder: 'bg-slate-700',
+    footer:     'bg-slate-900',
+    footerText: 'text-slate-600',
+  } : {
+    wrap:       'shadow-md border border-gray-200',
+    header:     'bg-gray-100',
+    headerText: 'text-gray-800',
+    headerSub:  'text-gray-400',
+    dot:        'bg-pink-400',
+    colHead:    'bg-gray-50 text-gray-400',
+    rowEven:    'bg-white',
+    rowOdd:     'bg-gray-50/70',
+    rowHover:   'hover:bg-pink-50/40',
+    divider:    'divide-gray-100',
+    time:       'text-pink-700',
+    catText:    'text-pink-700',
+    catBg:      'bg-pink-50 border-pink-200',
+    teamText:   'text-gray-900',
+    oppText:    'text-gray-500',
+    oppLogoBg:  'bg-gray-100',
+    oppPlaceholder: 'bg-gray-200',
+    footer:     'bg-gray-50',
+    footerText: 'text-gray-400',
+  }
+
   return (
-    <div className="rounded-2xl overflow-hidden shadow-2xl">
+    <div className={`rounded-2xl overflow-hidden ${t.wrap}`}>
       {/* Header panneau */}
-      <div className="bg-slate-900 px-5 py-3 flex items-center justify-between">
+      <div className={`${t.header} px-5 py-3 flex items-center justify-between`}>
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
-          <span className="text-white font-black text-sm tracking-widest uppercase">{dateLabel}</span>
+          <div className={`w-2 h-2 rounded-full ${t.dot} ${dark ? 'animate-pulse' : ''}`} />
+          <span className={`${t.headerText} font-black text-sm tracking-widest uppercase`}>{dateLabel}</span>
         </div>
-        <span className="text-slate-400 text-xs tracking-widest uppercase font-mono">Gymnase HBSME</span>
+        <span className={`${t.headerSub} text-xs tracking-widest uppercase font-mono`}>
+          {dark ? 'Gymnase HBSME' : 'Extérieur'}
+        </span>
       </div>
 
       {/* Colonnes header */}
-      <div className="bg-slate-800 px-5 py-2 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 text-slate-500 text-xs font-bold tracking-widest uppercase">
+      <div className={`${t.colHead} px-5 py-2 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 text-xs font-bold tracking-widest uppercase`}>
         <span>Heure</span>
         <span>Cat.</span>
         <span>Équipe</span>
@@ -385,7 +417,7 @@ function AirportBoard({ label, matches }: { label: string; matches: MatchRow[] }
       </div>
 
       {/* Lignes matchs */}
-      <div className="bg-slate-950 divide-y divide-slate-800/60">
+      <div className={`divide-y ${t.divider}`}>
         {matches.map((m, i) => {
           const home = isHome(m.team1)
           const clubTeam = home ? m.team1 : m.team2
@@ -395,40 +427,33 @@ function AirportBoard({ label, matches }: { label: string; matches: MatchRow[] }
           const time = m.date
             ? new Date(m.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
             : '—:—'
-          const isLast = i === matches.length - 1
 
           return (
             <div
               key={m.id}
-              className={`px-5 py-4 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 items-center
-                ${i % 2 === 0 ? 'bg-slate-950' : 'bg-slate-900/50'}
-                hover:bg-slate-800/80 transition-colors`}
+              className={`px-5 py-4 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 items-center ${i % 2 === 0 ? t.rowEven : t.rowOdd} ${t.rowHover} transition-colors`}
             >
-              {/* Heure */}
-              <span className="text-amber-400 font-mono font-bold text-lg tabular-nums">{time}</span>
+              <span className={`${t.time} font-mono font-bold text-lg tabular-nums`}>{time}</span>
 
-              {/* Catégorie */}
               {category ? (
-                <span className="text-xs font-black text-pink-400 bg-pink-950/60 border border-pink-800/50 rounded px-1.5 py-0.5 text-center w-fit">
+                <span className={`text-xs font-black ${t.catText} ${t.catBg} border rounded px-1.5 py-0.5 text-center w-fit`}>
                   {category}
                 </span>
               ) : <span />}
 
-              {/* Notre équipe */}
               <div className="flex items-center gap-2 min-w-0">
                 <img src="/logo-hbsme.png" alt="HBSME" className="w-7 h-7 object-contain shrink-0 opacity-90" />
-                <span className="text-white font-bold text-sm truncate">{teamLabel(clubTeam)}</span>
+                <span className={`${t.teamText} font-bold text-sm truncate`}>{teamLabel(clubTeam)}</span>
               </div>
 
-              {/* Adversaire */}
               <div className="flex items-center gap-2 min-w-0">
                 {oppLogo ? (
-                  <img src={oppLogo} alt="" className="w-7 h-7 object-contain shrink-0 opacity-80 bg-white/5 rounded-full p-0.5"
+                  <img src={oppLogo} alt="" className={`w-7 h-7 object-contain shrink-0 ${t.oppLogoBg} rounded-full p-0.5`}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-slate-700 shrink-0" />
+                  <div className={`w-7 h-7 rounded-full ${t.oppPlaceholder} shrink-0`} />
                 )}
-                <span className="text-slate-300 font-medium text-sm truncate">{teamLabel(oppTeam)}</span>
+                <span className={`${t.oppText} font-medium text-sm truncate`}>{teamLabel(oppTeam)}</span>
               </div>
             </div>
           )
@@ -436,8 +461,8 @@ function AirportBoard({ label, matches }: { label: string; matches: MatchRow[] }
       </div>
 
       {/* Footer */}
-      <div className="bg-slate-900 px-5 py-2 text-right">
-        <span className="text-slate-600 text-xs font-mono">HBSME · {matches.length} rencontre{matches.length > 1 ? 's' : ''}</span>
+      <div className={`${t.footer} px-5 py-2 text-right`}>
+        <span className={`${t.footerText} text-xs font-mono`}>HBSME · {matches.length} rencontre{matches.length > 1 ? 's' : ''}</span>
       </div>
     </div>
   )
