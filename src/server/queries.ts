@@ -26,7 +26,7 @@ export function formatCompetition(raw: string): string {
 export function logoUrl(filename: string | null): string | null {
   if (!filename) return null
   // Le CDN FFHB ne sert que les .webp (403 sur jpg/png)
-  const webp = filename.replace(/\.(jpg|JPG|png|PNG|jpeg|JPEG)$/, '.webp')
+  const webp = filename.replace(/\.(jpg|JPG|png|PNG|jpeg|JPEG|gif|GIF)$/, '.webp')
   return `${LOGO_BASE}${webp}`
 }
 
