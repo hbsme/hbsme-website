@@ -28,6 +28,15 @@ export const Route = createFileRoute('/')({
 
 const CLUB_LOGO = '/logo-hbsme.png'
 
+const CATEGORY_ORDER: Record<string, number> = {
+  '11F': 1, '11G': 2, '13F': 3, '13G': 4, '15F': 5, '15G': 6,
+  '18F': 7, '18G': 8, 'SF': 9, 'SG': 10,
+}
+
+function categorySortKey(competition: string): number {
+  return CATEGORY_ORDER[teamCategory(competition)] ?? 99
+}
+
 function teamCategory(competition: string): string {
   const c = competition.replace(/^GIRONDE_/, '').toUpperCase()
   if (c.includes('+16') && c.includes('MASCUL')) return 'SG'
@@ -292,12 +301,18 @@ function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]
 function Home() {
   const { upcoming, results, standings, birthdays, weekendMatches } = Route.useLoaderData()
 
+  const sortedResults = [...results].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
+  const sortedUpcoming = [...upcoming].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
+
   const standingGroups = standings.reduce<Record<string, TeamRow[]>>((acc, t) => {
     const label = formatCompetition(t.competition)
     if (!acc[label]) acc[label] = []
     acc[label].push(t)
     return acc
   }, {})
+
+  const sortedStandingGroups = Object.entries(standingGroups)
+    .sort(([, a], [, b]) => categorySortKey(a[0].competition) - categorySortKey(b[0].competition))
 
   const weekendText = generateWeekendText(weekendMatches)
 
@@ -354,58 +369,58 @@ function Home() {
         </div>
       </section>
 
-      {/* Calendrier anniversaires — flottant, h-0 pour ne pas pousser le contenu */}
-      <div className="relative z-10 h-0 overflow-visible -mt-6">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-end">
-            <div className="relative w-56" id="anniversaires">
+      <main className="max-w-6xl mx-auto px-4 pt-10 pb-16 space-y-20">
+
+        {/* Actu du week-end + card anniversaire côte à côte */}
+        <section id="weekend">
+          <div className="flex gap-8 items-start">
+
+            {/* Actu — prend tout l'espace disponible */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-6">
+                <h2 className="text-2xl font-black text-gray-900">Actu du week-end</h2>
+                <span className="text-xs text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white">
+                  ✦ Résumé automatique
+                </span>
+              </div>
+              <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                <p className="text-gray-600 leading-relaxed text-base">{weekendText}</p>
+                {weekendMatches.length > 0 && (
+                  <p className="text-xs text-gray-300 mt-4">
+                    Basé sur {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} du week-end.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Card anniversaire — taille fixe, punaisée */}
+            <div className="relative w-52 shrink-0 hidden md:block mt-10" id="anniversaires">
               {/* Pin */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 drop-shadow-md">
                 <div className="w-6 h-6 rounded-full bg-pink-700 border-2 border-pink-800 shadow-lg flex items-center justify-center">
                   <div className="w-2 h-2 rounded-full bg-white opacity-60" />
                 </div>
               </div>
-              {/* Carte */}
-              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-300">
-                {/* En-tête */}
+              {/* Carte — rotation autour du pin (origin-top) */}
+              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden rotate-1 hover:rotate-0 origin-top transition-transform duration-300">
                 <div className="bg-gradient-to-b from-pink-600 to-pink-800 px-3 py-2 text-center">
                   <p className="text-white text-xs font-black tracking-widest uppercase">🎂 Anniversaires</p>
                 </div>
                 <BirthdayWeek birthdays={birthdays} compact />
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <main className="max-w-6xl mx-auto px-4 pt-10 pb-16 space-y-20">
-
-        {/* Actu du week-end */}
-        <section id="weekend">
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-black text-gray-900">Actu du week-end</h2>
-            <span className="text-xs text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white">
-              ✦ Résumé automatique
-            </span>
-          </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-            <p className="text-gray-600 leading-relaxed text-base">{weekendText}</p>
-            {weekendMatches.length > 0 && (
-              <p className="text-xs text-gray-300 mt-4">
-                Basé sur {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} du week-end.
-              </p>
-            )}
           </div>
         </section>
 
         {/* Résultats récents */}
         <section id="resultats">
           <h2 className="text-2xl font-black text-gray-900 mb-6">Derniers résultats</h2>
-          {results.length === 0 ? (
+          {sortedResults.length === 0 ? (
             <p className="text-gray-400">Aucun résultat disponible.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {results.map((m) => <MatchCard key={m.id} match={m} variant="result" />)}
+              {sortedResults.map((m) => <MatchCard key={m.id} match={m} variant="result" />)}
             </div>
           )}
         </section>
@@ -413,11 +428,11 @@ function Home() {
         {/* Prochains matchs */}
         <section id="matchs">
           <h2 className="text-2xl font-black text-gray-900 mb-6">Prochains matchs</h2>
-          {upcoming.length === 0 ? (
+          {sortedUpcoming.length === 0 ? (
             <p className="text-gray-400">Aucun match à venir renseigné.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {upcoming.map((m) => <MatchCard key={m.id} match={m} variant="upcoming" />)}
+              {sortedUpcoming.map((m) => <MatchCard key={m.id} match={m} variant="upcoming" />)}
             </div>
           )}
         </section>
@@ -426,7 +441,7 @@ function Home() {
         <section id="classements">
           <h2 className="text-2xl font-black text-gray-900 mb-6">Classements</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {Object.entries(standingGroups).map(([label, teams]) => (
+            {sortedStandingGroups.map(([label, teams]) => (
               <StandingsGroup key={label} label={label} teams={teams} />
             ))}
           </div>
