@@ -1,7 +1,7 @@
 import { createHash } from 'crypto'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
 import { tmpdir } from 'os'
+import { join } from 'path'
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -212,13 +212,16 @@ export async function generateWeekendSummary(
   }
 
   try {
-    const { GoogleGenerativeAI } = await import('@google/generative-ai')
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' })
     const prompt = buildPrompt(currentWeek, history)
-
-    const result = await model.generateContent(prompt)
-    const text = result.response.text().trim()
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    })
+    if (!res.ok) throw new Error(`Gemini API ${res.status}`)
+    const data = await res.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? ''
 
     if (text) {
       writeCache({ hash, text, generatedAt: new Date().toISOString() })

@@ -11,9 +11,6 @@ const config = defineConfig({
   server: {
     allowedHosts: ['dev.hbsme.fr'],
   },
-  ssr: {
-    noExternal: ['@google/generative-ai'],
-  },
   plugins: [
     devtools(),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
