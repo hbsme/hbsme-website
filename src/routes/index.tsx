@@ -1,87 +1,292 @@
 import { createFileRoute } from '@tanstack/react-router'
+import {
+  formatCompetition,
+  getRecentResults,
+  getStandings,
+  getUpcomingMatches,
+  isHome,
+  logoUrl,
+} from '../server/queries'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  component: Home,
+  loader: async () => {
+    const [upcoming, results, standings] = await Promise.all([
+      getUpcomingMatches(),
+      getRecentResults(),
+      getStandings(),
+    ])
+    return { upcoming, results, standings }
+  },
+})
 
-function App() {
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function formatDate(d: Date | string | null) {
+  if (!d) return '—'
+  const date = typeof d === 'string' ? new Date(d) : d
+  return date.toLocaleDateString('fr-FR', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function teamLabel(name: string) {
+  return name
+    .replace(/HANDBALL SAINT MEDARD D'EYRANS ?/i, 'HBSME')
+    .replace(/HANDBALL /i, '')
+    .replace(/CLUB /i, '')
+    .replace(/\b(\d+)$/, '($1)')
+    .trim()
+}
+
+function matchResult(score1: string | null, score2: string | null, team1: string) {
+  if (!score1 || !score2) return null
+  const s1 = parseInt(score1)
+  const s2 = parseInt(score2)
+  const home = isHome(team1)
+  const clubScore = home ? s1 : s2
+  const oppScore = home ? s2 : s1
+  if (clubScore > oppScore) return 'win'
+  if (clubScore < oppScore) return 'loss'
+  return 'draw'
+}
+
+// ─── sub-components ───────────────────────────────────────────────────────────
+
+function TeamLogo({ url, alt }: { url: string | null; alt: string }) {
+  if (!url) {
+    return (
+      <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-xs text-slate-400 font-bold shrink-0">
+        {alt.substring(0, 2)}
+      </div>
+    )
+  }
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">TanStack Start Base Template</p>
-        <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          Start simple, ship quickly.
-        </h1>
-        <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
-          This base starter intentionally keeps things light: two routes, clean
-          structure, and the essentials you need to build from scratch.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/about"
-            className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-5 py-2.5 text-sm font-semibold text-[var(--lagoon-deep)] no-underline transition hover:-translate-y-0.5 hover:bg-[rgba(79,184,178,0.24)]"
-          >
-            About This Starter
-          </a>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-5 py-2.5 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[rgba(23,58,64,0.35)]"
-          >
-            Router Guide
-          </a>
+    <img
+      src={url}
+      alt={alt}
+      className="w-10 h-10 rounded-full object-contain bg-white p-0.5 shrink-0"
+      onError={(e) => {
+        e.currentTarget.style.display = 'none'
+      }}
+    />
+  )
+}
+
+type MatchRow = Awaited<ReturnType<typeof getUpcomingMatches>>[number]
+
+function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 'result' }) {
+  const home = isHome(match.team1)
+  const clubTeam = home ? match.team1 : match.team2
+  const oppTeam = home ? match.team2 : match.team1
+  const clubLogo = logoUrl(home ? match.logo1 : match.logo2)
+  const oppLogo = logoUrl(home ? match.logo2 : match.logo1)
+  const clubScore = home ? match.score1 : match.score2
+  const oppScore = home ? match.score2 : match.score1
+  const result = matchResult(match.score1, match.score2, match.team1)
+
+  const resultColor = {
+    win: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    loss: 'bg-red-500/20 text-red-400 border-red-500/30',
+    draw: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  }
+
+  return (
+    <div className="bg-slate-800 rounded-xl p-4 flex flex-col gap-3 hover:bg-slate-700/80 transition-colors">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-slate-400 truncate">
+          {formatCompetition(match.competition)}
+        </span>
+        {result && (
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full border shrink-0 ${resultColor[result]}`}>
+            {result === 'win' ? 'V' : result === 'loss' ? 'D' : 'N'}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <TeamLogo url={clubLogo} alt={teamLabel(clubTeam)} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate">{teamLabel(clubTeam)}</p>
+          <p className="text-xs text-slate-400">{home ? 'Domicile' : 'Extérieur'}</p>
         </div>
+        {variant === 'result' && clubScore != null && oppScore != null ? (
+          <div className="text-center shrink-0">
+            <span className="text-2xl font-black text-white tabular-nums">
+              {clubScore}
+              <span className="text-slate-500 mx-1">–</span>
+              {oppScore}
+            </span>
+          </div>
+        ) : (
+          <div className="text-center shrink-0 text-slate-400 font-semibold text-sm">
+            {match.date ? formatDate(match.date) : 'Date TBD'}
+          </div>
+        )}
+        <div className="flex-1 min-w-0 text-right">
+          <p className="text-sm font-semibold text-slate-300 truncate">{teamLabel(oppTeam)}</p>
+        </div>
+        <TeamLogo url={oppLogo} alt={teamLabel(oppTeam)} />
+      </div>
+
+      {variant === 'result' && match.date && (
+        <p className="text-xs text-slate-500 text-right">{formatDate(match.date)}</p>
+      )}
+    </div>
+  )
+}
+
+type TeamRow = Awaited<ReturnType<typeof getStandings>>[number]
+
+function StandingsGroup({ label, teams }: { label: string; teams: TeamRow[] }) {
+  return (
+    <div className="bg-slate-800 rounded-xl overflow-hidden">
+      <div className="px-4 py-3 bg-slate-700/50">
+        <h3 className="text-sm font-bold text-slate-200">{label}</h3>
+      </div>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-xs text-slate-500 border-b border-slate-700">
+            <th className="text-left px-4 py-2">#</th>
+            <th className="text-left px-4 py-2">Équipe</th>
+            <th className="text-center px-2 py-2">J</th>
+            <th className="text-center px-2 py-2">G</th>
+            <th className="text-center px-2 py-2">N</th>
+            <th className="text-center px-2 py-2">P</th>
+            <th className="text-center px-4 py-2 font-bold text-slate-400">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {teams.map((t) => {
+            const isClub = t.team.includes('SAINT MEDARD')
+            return (
+              <tr
+                key={t.id}
+                className={`border-b border-slate-700/50 last:border-0 ${isClub ? 'bg-blue-600/10' : ''}`}
+              >
+                <td className="px-4 py-2.5 text-slate-400">{t.score_place}</td>
+                <td className={`px-4 py-2.5 font-medium ${isClub ? 'text-blue-400' : 'text-slate-300'}`}>
+                  {isClub ? 'HBSME' : teamLabel(t.team)}
+                </td>
+                <td className="text-center px-2 py-2.5 text-slate-400">{t.score_joue}</td>
+                <td className="text-center px-2 py-2.5 text-slate-400">{t.score_gagne}</td>
+                <td className="text-center px-2 py-2.5 text-slate-400">{t.score_nul}</td>
+                <td className="text-center px-2 py-2.5 text-slate-400">{t.score_perdu}</td>
+                <td className="text-center px-4 py-2.5 font-bold text-white">{t.score_point}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ─── main page ────────────────────────────────────────────────────────────────
+
+function Home() {
+  const { upcoming, results, standings } = Route.useLoaderData()
+
+  // Group standings by competition label
+  const standingGroups = standings.reduce<Record<string, TeamRow[]>>((acc, t) => {
+    const label = formatCompetition(t.competition)
+    if (!acc[label]) acc[label] = []
+    acc[label].push(t)
+    return acc
+  }, {})
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-white">
+      {/* Header */}
+      <header className="border-b border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-black text-sm">
+              HB
+            </div>
+            <div>
+              <p className="font-bold text-white leading-tight">HBSME</p>
+              <p className="text-xs text-slate-400">Saint-Médard d'Eyrans</p>
+            </div>
+          </div>
+          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-400">
+            <a href="#resultats" className="hover:text-white transition-colors">Résultats</a>
+            <a href="#matchs" className="hover:text-white transition-colors">Matchs</a>
+            <a href="#classements" className="hover:text-white transition-colors">Classements</a>
+          </nav>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-4 py-16 text-center">
+        <p className="text-blue-400 text-sm font-semibold tracking-widest uppercase mb-4">
+          Handball Club
+        </p>
+        <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight">
+          Handball<br />
+          <span className="text-blue-500">Saint-Médard</span><br />
+          d'Eyrans
+        </h1>
+        <p className="text-slate-400 text-lg max-w-md mx-auto">
+          Suivez l'actualité de nos équipes — résultats, prochains matchs et classements.
+        </p>
       </section>
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          [
-            'Type-Safe Routing',
-            'Routes and links stay in sync across every page.',
-          ],
-          [
-            'Server Functions',
-            'Call server code from your UI without creating API boilerplate.',
-          ],
-          [
-            'Streaming by Default',
-            'Ship progressively rendered responses for faster experiences.',
-          ],
-          [
-            'Tailwind Native',
-            'Design quickly with utility-first styling and reusable tokens.',
-          ],
-        ].map(([title, desc], index) => (
-          <article
-            key={title}
-            className="island-shell feature-card rise-in rounded-2xl p-5"
-            style={{ animationDelay: `${index * 90 + 80}ms` }}
-          >
-            <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">
-              {title}
-            </h2>
-            <p className="m-0 text-sm text-[var(--sea-ink-soft)]">{desc}</p>
-          </article>
-        ))}
-      </section>
+      <main className="max-w-6xl mx-auto px-4 pb-20 space-y-16">
 
-      <section className="island-shell mt-8 rounded-2xl p-6">
-        <p className="island-kicker mb-2">Quick Start</p>
-        <ul className="m-0 list-disc space-y-2 pl-5 text-sm text-[var(--sea-ink-soft)]">
-          <li>
-            Edit <code>src/routes/index.tsx</code> to customize the home page.
-          </li>
-          <li>
-            Update <code>src/components/Header.tsx</code> and{' '}
-            <code>src/components/Footer.tsx</code> for brand links.
-          </li>
-          <li>
-            Add routes in <code>src/routes</code> and tweak visual tokens in{' '}
-            <code>src/styles.css</code>.
-          </li>
-        </ul>
-      </section>
-    </main>
+        {/* Résultats récents */}
+        <section id="resultats">
+          <h2 className="text-2xl font-black mb-6">
+            Derniers résultats
+          </h2>
+          {results.length === 0 ? (
+            <p className="text-slate-500">Aucun résultat disponible.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {results.map((m) => (
+                <MatchCard key={m.id} match={m} variant="result" />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Prochains matchs */}
+        <section id="matchs">
+          <h2 className="text-2xl font-black mb-6">
+            Prochains matchs
+          </h2>
+          {upcoming.length === 0 ? (
+            <p className="text-slate-500">Aucun match à venir dans la base de données.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {upcoming.map((m) => (
+                <MatchCard key={m.id} match={m} variant="upcoming" />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Classements */}
+        <section id="classements">
+          <h2 className="text-2xl font-black mb-6">
+            Classements
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {Object.entries(standingGroups).map(([label, teams]) => (
+              <StandingsGroup key={label} label={label} teams={teams} />
+            ))}
+          </div>
+        </section>
+
+      </main>
+
+      <footer className="border-t border-slate-800 py-8 text-center text-slate-600 text-sm">
+        © {new Date().getFullYear()} Handball Saint-Médard d'Eyrans · Données FFHB
+      </footer>
+    </div>
   )
 }
