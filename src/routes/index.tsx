@@ -320,11 +320,11 @@ function UpcomingMatchGroups({ matches }: { matches: MatchRow[] }) {
   }
 
   const LABELS: Record<string, string> = {
-    'sam-home': '🏠 Samedi · Domicile',
-    'sam-away': '✈️ Samedi · Extérieur',
-    'dim-home': '🏠 Dimanche · Domicile',
-    'dim-away': '✈️ Dimanche · Extérieur',
-    'other': '📅 Autres dates',
+    'sam-home': 'Samedi · Domicile',
+    'sam-away': 'Samedi · Extérieur',
+    'dim-home': 'Dimanche · Domicile',
+    'dim-away': 'Dimanche · Extérieur',
+    'other': 'Autres dates',
   }
 
   const groups: MatchGroup[] = Object.entries(grouped)
@@ -336,25 +336,109 @@ function UpcomingMatchGroups({ matches }: { matches: MatchRow[] }) {
     }))
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {groups.map(({ label, highlight, matches: ms }) => (
         <div key={label}>
-          <div className={`flex items-center gap-3 mb-4`}>
-            <h3 className={`text-base font-black tracking-wide ${highlight ? 'text-pink-700' : 'text-gray-600'}`}>
-              {label}
-            </h3>
-            {highlight && (
-              <span className="text-xs font-bold text-pink-700 bg-pink-50 border border-pink-200 rounded-full px-2 py-0.5">
-                À ne pas manquer
-              </span>
-            )}
-            <div className="flex-1 h-px bg-gray-100" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {ms.map((m) => <MatchCard key={m.id} match={m} variant="upcoming" />)}
-          </div>
+          {highlight ? (
+            <AirportBoard label={label} matches={ms} />
+          ) : (
+            <>
+              <div className="flex items-center gap-3 mb-4">
+                <h3 className="text-sm font-bold text-gray-400 tracking-wide uppercase">{label}</h3>
+                <div className="flex-1 h-px bg-gray-100" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {ms.map((m) => <MatchCard key={m.id} match={m} variant="upcoming" />)}
+              </div>
+            </>
+          )}
         </div>
       ))}
+    </div>
+  )
+}
+
+function AirportBoard({ label, matches }: { label: string; matches: MatchRow[] }) {
+  // Extraire la date du premier match pour l'afficher dans le header
+  const firstDate = matches[0]?.date ? new Date(matches[0].date) : null
+  const dateLabel = firstDate
+    ? firstDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+    : label
+
+  return (
+    <div className="rounded-2xl overflow-hidden shadow-2xl">
+      {/* Header panneau */}
+      <div className="bg-slate-900 px-5 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
+          <span className="text-white font-black text-sm tracking-widest uppercase">{dateLabel}</span>
+        </div>
+        <span className="text-slate-400 text-xs tracking-widest uppercase font-mono">Gymnase HBSME</span>
+      </div>
+
+      {/* Colonnes header */}
+      <div className="bg-slate-800 px-5 py-2 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 text-slate-500 text-xs font-bold tracking-widest uppercase">
+        <span>Heure</span>
+        <span>Cat.</span>
+        <span>Équipe</span>
+        <span>Adversaire</span>
+      </div>
+
+      {/* Lignes matchs */}
+      <div className="bg-slate-950 divide-y divide-slate-800/60">
+        {matches.map((m, i) => {
+          const home = isHome(m.team1)
+          const clubTeam = home ? m.team1 : m.team2
+          const oppTeam = home ? m.team2 : m.team1
+          const oppLogo = logoUrl(home ? m.logo2 : m.logo1)
+          const category = teamCategory(m.competition)
+          const time = m.date
+            ? new Date(m.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+            : '—:—'
+          const isLast = i === matches.length - 1
+
+          return (
+            <div
+              key={m.id}
+              className={`px-5 py-4 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 items-center
+                ${i % 2 === 0 ? 'bg-slate-950' : 'bg-slate-900/50'}
+                hover:bg-slate-800/80 transition-colors`}
+            >
+              {/* Heure */}
+              <span className="text-amber-400 font-mono font-bold text-lg tabular-nums">{time}</span>
+
+              {/* Catégorie */}
+              {category ? (
+                <span className="text-xs font-black text-pink-400 bg-pink-950/60 border border-pink-800/50 rounded px-1.5 py-0.5 text-center w-fit">
+                  {category}
+                </span>
+              ) : <span />}
+
+              {/* Notre équipe */}
+              <div className="flex items-center gap-2 min-w-0">
+                <img src="/logo-hbsme.png" alt="HBSME" className="w-7 h-7 object-contain shrink-0 opacity-90" />
+                <span className="text-white font-bold text-sm truncate">{teamLabel(clubTeam)}</span>
+              </div>
+
+              {/* Adversaire */}
+              <div className="flex items-center gap-2 min-w-0">
+                {oppLogo ? (
+                  <img src={oppLogo} alt="" className="w-7 h-7 object-contain shrink-0 opacity-80 bg-white/5 rounded-full p-0.5"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-slate-700 shrink-0" />
+                )}
+                <span className="text-slate-300 font-medium text-sm truncate">{teamLabel(oppTeam)}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="bg-slate-900 px-5 py-2 text-right">
+        <span className="text-slate-600 text-xs font-mono">HBSME · {matches.length} rencontre{matches.length > 1 ? 's' : ''}</span>
+      </div>
     </div>
   )
 }
