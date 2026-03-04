@@ -26,7 +26,7 @@ export const Route = createFileRoute('/')({
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-const CLUB_LOGO = 'https://media.ffhandball.fr/logos/2024-06-02-6ba1cb3a-7775-47a2-a078-5d37ce671b6f.png'
+const CLUB_LOGO = '/logo-hbsme.png'
 
 function formatDate(d: Date | string | null, withTime = true) {
   if (!d) return '—'
