@@ -124,7 +124,7 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
       {/* Header: catégorie + compétition + résultat */}
       <div className="flex items-center gap-2">
         {category && (
-          <span className="text-sm font-black text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-0.5 shrink-0">
+          <span className="text-sm font-black text-pink-800 bg-pink-50 border border-pink-200 rounded-lg px-2.5 py-0.5 shrink-0">
             {category}
           </span>
         )}
@@ -199,17 +199,17 @@ function StandingsGroup({ label, teams }: { label: string; teams: TeamRow[] }) {
             return (
               <tr
                 key={t.id}
-                className={`border-b border-gray-50 last:border-0 ${isClub ? 'bg-rose-50' : 'hover:bg-gray-50'}`}
+                className={`border-b border-gray-50 last:border-0 ${isClub ? 'bg-pink-50' : 'hover:bg-gray-50'}`}
               >
                 <td className="px-4 py-2.5 text-gray-400 text-xs">{t.score_place}</td>
-                <td className={`px-4 py-2.5 font-semibold text-sm ${isClub ? 'text-rose-600' : 'text-gray-700'}`}>
+                <td className={`px-4 py-2.5 font-semibold text-sm ${isClub ? 'text-pink-800' : 'text-gray-700'}`}>
                   {isClub ? 'HBSME' : teamLabel(t.team)}
                 </td>
                 <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_joue}</td>
                 <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_gagne}</td>
                 <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_nul}</td>
                 <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_perdu}</td>
-                <td className={`text-center px-4 py-2.5 font-bold text-sm ${isClub ? 'text-rose-600' : 'text-gray-800'}`}>{t.score_point}</td>
+                <td className={`text-center px-4 py-2.5 font-bold text-sm ${isClub ? 'text-pink-800' : 'text-gray-800'}`}>{t.score_point}</td>
               </tr>
             )
           })}
@@ -262,10 +262,10 @@ function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]
         return (
           <div
             key={key}
-            className={`flex items-center gap-3 ${px} ${py} border-b border-gray-50 last:border-0 ${isToday ? 'bg-rose-50' : isPast ? 'opacity-50' : ''}`}
+            className={`flex items-center gap-3 ${px} ${py} border-b border-gray-50 last:border-0 ${isToday ? 'bg-pink-50' : isPast ? 'opacity-50' : ''}`}
           >
             {/* Badge date */}
-            <div className={`rounded-lg px-2 py-1 shrink-0 flex items-center gap-1 ${isToday ? 'bg-rose-500 text-white' : isPast ? 'bg-gray-200 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+            <div className={`rounded-lg px-2 py-1 shrink-0 flex items-center gap-1 ${isToday ? 'bg-pink-700 text-white' : isPast ? 'bg-gray-200 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
               <span className="text-xs font-semibold">{DAYS_FR[d.getDay()]}</span>
               <span className={`${compact ? 'text-sm' : 'text-base'} font-black ${isToday ? 'text-white' : 'text-gray-700'}`}>{d.getDate()}</span>
             </div>
@@ -275,7 +275,7 @@ function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]
               {people.length === 0 ? (
                 <span className={`${compact ? 'text-xs' : 'text-sm'} text-gray-300`}>—</span>
               ) : (
-                <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${isToday ? 'text-rose-700' : isPast ? 'text-gray-400 line-through' : 'text-gray-700'} truncate block`}>
+                <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${isToday ? 'text-pink-900' : isPast ? 'text-gray-400 line-through' : 'text-gray-700'} truncate block`}>
                   {isToday && '🎉 '}{people.map(p => formatName(p.firstname, p.lastname)).join(', ')}
                 </span>
               )}
@@ -315,25 +315,25 @@ function Home() {
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-500">
-            <a href="#weekend" className="hover:text-rose-600 transition-colors">Actu</a>
-            <a href="#resultats" className="hover:text-rose-600 transition-colors">Résultats</a>
-            <a href="#matchs" className="hover:text-rose-600 transition-colors">Matchs</a>
-            <a href="#classements" className="hover:text-rose-600 transition-colors">Classements</a>
-            <a href="#anniversaires" className="hover:text-rose-600 transition-colors">Anniversaires</a>
+            <a href="#weekend" className="hover:text-pink-800 transition-colors">Actu</a>
+            <a href="#resultats" className="hover:text-pink-800 transition-colors">Résultats</a>
+            <a href="#matchs" className="hover:text-pink-800 transition-colors">Matchs</a>
+            <a href="#classements" className="hover:text-pink-800 transition-colors">Classements</a>
+            <a href="#anniversaires" className="hover:text-pink-800 transition-colors">Anniversaires</a>
           </nav>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-white via-white to-rose-50 border-b border-rose-100 pb-10">
+      <section className="bg-gradient-to-br from-white via-white to-pink-50 border-b border-pink-100 pb-10">
         <div className="max-w-6xl mx-auto px-4 pt-16 flex flex-col md:flex-row items-center gap-10">
           <div className="flex-1">
-            <p className="text-rose-500 text-sm font-bold tracking-widest uppercase mb-3">
+            <p className="text-pink-700 text-sm font-bold tracking-widest uppercase mb-3">
               Handball Club · Gironde
             </p>
             <h1 className="text-5xl md:text-7xl font-black mb-6 leading-none text-gray-900">
               Handball<br />
-              <span className="text-rose-500">Saint-Médard</span><br />
+              <span className="text-pink-700">Saint-Médard</span><br />
               d'Eyrans
             </h1>
             <p className="text-gray-500 text-base max-w-lg leading-relaxed mb-3">
@@ -361,14 +361,14 @@ function Home() {
             <div className="relative w-56" id="anniversaires">
               {/* Pin */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 drop-shadow-md">
-                <div className="w-6 h-6 rounded-full bg-rose-500 border-2 border-rose-600 shadow-lg flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-pink-700 border-2 border-pink-800 shadow-lg flex items-center justify-center">
                   <div className="w-2 h-2 rounded-full bg-white opacity-60" />
                 </div>
               </div>
               {/* Carte */}
               <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-300">
                 {/* En-tête */}
-                <div className="bg-rose-500 px-3 py-2 text-center">
+                <div className="bg-gradient-to-b from-pink-600 to-pink-800 px-3 py-2 text-center">
                   <p className="text-white text-xs font-black tracking-widest uppercase">🎂 Anniversaires</p>
                 </div>
                 <BirthdayWeek birthdays={birthdays} compact />
