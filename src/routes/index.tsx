@@ -296,6 +296,69 @@ function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]
   )
 }
 
+// ─── upcoming match groups ─────────────────────────────────────────────────────
+
+type MatchGroup = { label: string; highlight: boolean; matches: MatchRow[] }
+
+function UpcomingMatchGroups({ matches }: { matches: MatchRow[] }) {
+  // Grouper par (jour semaine, domicile/extérieur)
+  // Ordre prioritaire : Sam dom > Sam ext > Dim dom > Dim ext > autres
+  const GROUP_ORDER: Record<string, number> = {
+    'sam-home': 0, 'sam-away': 1, 'dim-home': 2, 'dim-away': 3,
+  }
+
+  const grouped: Record<string, MatchRow[]> = {}
+  for (const m of matches) {
+    const day = m.date ? new Date(m.date).getDay() : -1 // 0=dim, 6=sam
+    const home = isHome(m.team1)
+    let key: string
+    if (day === 6) key = home ? 'sam-home' : 'sam-away'
+    else if (day === 0) key = home ? 'dim-home' : 'dim-away'
+    else key = 'other'
+    if (!grouped[key]) grouped[key] = []
+    grouped[key].push(m)
+  }
+
+  const LABELS: Record<string, string> = {
+    'sam-home': '🏠 Samedi · Domicile',
+    'sam-away': '✈️ Samedi · Extérieur',
+    'dim-home': '🏠 Dimanche · Domicile',
+    'dim-away': '✈️ Dimanche · Extérieur',
+    'other': '📅 Autres dates',
+  }
+
+  const groups: MatchGroup[] = Object.entries(grouped)
+    .sort(([a], [b]) => (GROUP_ORDER[a] ?? 99) - (GROUP_ORDER[b] ?? 99))
+    .map(([key, ms]) => ({
+      label: LABELS[key] ?? key,
+      highlight: key === 'sam-home',
+      matches: ms,
+    }))
+
+  return (
+    <div className="space-y-10">
+      {groups.map(({ label, highlight, matches: ms }) => (
+        <div key={label}>
+          <div className={`flex items-center gap-3 mb-4`}>
+            <h3 className={`text-base font-black tracking-wide ${highlight ? 'text-pink-700' : 'text-gray-600'}`}>
+              {label}
+            </h3>
+            {highlight && (
+              <span className="text-xs font-bold text-pink-700 bg-pink-50 border border-pink-200 rounded-full px-2 py-0.5">
+                À ne pas manquer
+              </span>
+            )}
+            <div className="flex-1 h-px bg-gray-100" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {ms.map((m) => <MatchCard key={m.id} match={m} variant="upcoming" />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ─── main page ────────────────────────────────────────────────────────────────
 
 function Home() {
@@ -427,13 +490,11 @@ function Home() {
 
         {/* Prochains matchs */}
         <section id="matchs">
-          <h2 className="text-2xl font-black text-gray-900 mb-6">Prochains matchs</h2>
+          <h2 className="text-2xl font-black text-gray-900 mb-8">Prochains matchs</h2>
           {sortedUpcoming.length === 0 ? (
             <p className="text-gray-400">Aucun match à venir renseigné.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {sortedUpcoming.map((m) => <MatchCard key={m.id} match={m} variant="upcoming" />)}
-            </div>
+            <UpcomingMatchGroups matches={sortedUpcoming} />
           )}
         </section>
 
