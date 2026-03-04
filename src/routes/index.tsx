@@ -221,24 +221,64 @@ function StandingsGroup({ label, teams }: { label: string; teams: TeamRow[] }) {
 
 type BirthdayRow = Awaited<ReturnType<typeof getUpcomingBirthdays>>[number]
 
-function BirthdayCard({ person }: { person: BirthdayRow }) {
+const DAYS_FR = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+const MONTHS_FR = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+
+function formatName(firstname: string, lastname: string) {
+  const fn = firstname.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+  return `${fn} ${lastname.charAt(0).toUpperCase()}.`
+}
+
+function BirthdayWeek({ birthdays }: { birthdays: BirthdayRow[] }) {
   const today = new Date()
-  const bday = new Date(person.birthdate)
-  const thisYear = new Date(today.getFullYear(), bday.getMonth(), bday.getDate())
-  const isToday = thisYear.toDateString() === today.toDateString()
-  const age = today.getFullYear() - bday.getFullYear()
+  // Construire les 7 prochains jours
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(today.getDate() + i)
+    return d
+  })
+
+  // Grouper les anniversaires par jour (MM-DD)
+  const byDay: Record<string, BirthdayRow[]> = {}
+  for (const p of birthdays) {
+    const bday = new Date(p.birthdate)
+    const key = `${String(bday.getMonth() + 1).padStart(2, '0')}-${String(bday.getDate()).padStart(2, '0')}`
+    if (!byDay[key]) byDay[key] = []
+    byDay[key].push(p)
+  }
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors ${isToday ? 'bg-rose-50 border-rose-200' : 'bg-white border-gray-100 shadow-sm'}`}>
-      <span className="text-xl">{isToday ? '🎉' : '🎂'}</span>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-bold capitalize truncate ${isToday ? 'text-rose-700' : 'text-gray-800'}`}>
-          {person.firstname.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}{' '}
-          {person.lastname.charAt(0).toUpperCase()}.
-        </p>
-        <p className="text-xs text-gray-400">{age} ans · {formatDate(person.birthdate, false)}</p>
-      </div>
-      {isToday && <span className="text-xs font-bold text-rose-500 shrink-0">Aujourd'hui !</span>}
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {days.map((d, i) => {
+        const key = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        const people = byDay[key] || []
+        const isToday = i === 0
+
+        return (
+          <div
+            key={key}
+            className={`flex items-center gap-4 px-4 py-3 border-b border-gray-50 last:border-0 ${isToday ? 'bg-rose-50' : ''}`}
+          >
+            {/* Badge date */}
+            <div className={`rounded-xl w-12 shrink-0 flex flex-col items-center py-1.5 ${isToday ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+              <span className="text-xs font-semibold leading-none">{DAYS_FR[d.getDay()]}</span>
+              <span className="text-xs leading-none mt-0.5 opacity-70">{MONTHS_FR[d.getMonth()]}</span>
+              <span className={`text-base font-black leading-tight ${isToday ? 'text-white' : 'text-gray-700'}`}>{d.getDate()}</span>
+            </div>
+
+            {/* Noms */}
+            <div className="flex-1 min-w-0">
+              {people.length === 0 ? (
+                <span className="text-sm text-gray-300">—</span>
+              ) : (
+                <span className={`text-sm font-medium ${isToday ? 'text-rose-700' : 'text-gray-700'}`}>
+                  {isToday && '🎉 '}{people.map(p => formatName(p.firstname, p.lastname)).join(', ')}
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -318,13 +358,7 @@ function Home() {
             <h2 className="text-2xl font-black text-gray-900">🎂 Anniversaires</h2>
             <span className="text-xs text-gray-400">cette semaine</span>
           </div>
-          {birthdays.length === 0 ? (
-            <p className="text-gray-400">Aucun anniversaire cette semaine.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {birthdays.map((p, i) => <BirthdayCard key={i} person={p} />)}
-            </div>
-          )}
+          <BirthdayWeek birthdays={birthdays} />
         </section>
 
         {/* Actu du week-end */}
