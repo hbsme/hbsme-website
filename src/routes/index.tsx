@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { generateWeekendSummary } from '../server/ai'
 import {
   formatCompetition,
   getRecentResults,
@@ -20,7 +21,8 @@ export const Route = createFileRoute('/')({
       getUpcomingBirthdays(),
       getWeekendNews(),
     ])
-    return { upcoming, results, standings, birthdays, weekendMatches }
+    const weekendSummary = await generateWeekendSummary(weekendMatches)
+    return { upcoming, results, standings, birthdays, weekendMatches, weekendSummary }
   },
 })
 
@@ -77,16 +79,6 @@ function matchResult(score1: string | null, score2: string | null, team1: string
 }
 
 type WeekendMatches = Awaited<ReturnType<typeof getWeekendNews>>
-
-function generateWeekendText(matches: WeekendMatches) {
-  // TODO: Remplacer par un appel IA (ex: OpenAI/Anthropic) avec les matchs en contexte
-  if (matches.length === 0) {
-    return "Pas de matchs disputés ce week-end. Rendez-vous la semaine prochaine pour suivre nos équipes !"
-  }
-  const wins = matches.filter(m => matchResult(m.score1, m.score2, m.team1) === 'win').length
-  const total = matches.length
-  return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} étai${total > 1 ? 'ent' : 't'} au programme pour nos équipes. ${wins > 0 ? `Avec ${wins} victoire${wins > 1 ? 's' : ''} au compteur, le bilan est encourageant.` : 'Malgré des résultats difficiles, nos joueurs ont montré de la combativité.'} Retrouvez le détail des scores dans la section Résultats ci-dessous. Allez Saint-Médard ! 🤾`
-}
 
 // ─── sub-components ───────────────────────────────────────────────────────────
 
@@ -471,7 +463,7 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
 // ─── main page ────────────────────────────────────────────────────────────────
 
 function Home() {
-  const { upcoming, results, standings, birthdays, weekendMatches } = Route.useLoaderData()
+  const { upcoming, results, standings, birthdays, weekendMatches, weekendSummary } = Route.useLoaderData()
 
   const sortedResults = [...results].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
   const sortedUpcoming = [...upcoming].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
@@ -486,7 +478,7 @@ function Home() {
   const sortedStandingGroups = Object.entries(standingGroups)
     .sort(([, a], [, b]) => categorySortKey(a[0].competition) - categorySortKey(b[0].competition))
 
-  const weekendText = generateWeekendText(weekendMatches)
+  const weekendText = weekendSummary
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
