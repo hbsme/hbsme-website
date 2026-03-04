@@ -47,6 +47,13 @@ function categorySortKey(competition: string): number {
   return CATEGORY_ORDER[teamCategory(competition)] ?? 99
 }
 
+/** Extrait le numéro d'équipe HBSME (ex: "HBSME 1" → "1"), null si pas de numéro */
+function clubTeamNumber(name: string | null): string | null {
+  if (!name) return null
+  const m = name.match(/HANDBALL SAINT MEDARD D'EYRANS\s+(\d+)$/i)
+  return m?.[1] ?? null
+}
+
 function teamCategory(competition: string): string {
   const c = competition.replace(/^GIRONDE_/, '').toUpperCase()
   if (c.includes('+16') && c.includes('MASCUL')) return 'SG'
@@ -121,6 +128,8 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
   const oppScore = home ? match.score2 : match.score1
   const result = matchResult(match.score1, match.score2, match.team1)
   const category = teamCategory(match.competition)
+  const teamNum = clubTeamNumber(clubTeam)
+  const categoryLabel = teamNum ? `${category}${teamNum}` : category
 
   const resultStyle = {
     win: { badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', score: 'text-emerald-600' },
@@ -132,9 +141,9 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow border border-gray-100 shadow-sm">
       {/* Header: catégorie + compétition + résultat */}
       <div className="flex items-center gap-2">
-        {category && (
+        {categoryLabel && (
           <span className="text-sm font-black text-pink-800 bg-pink-50 border border-pink-200 rounded-lg px-2.5 py-0.5 shrink-0">
-            {category}
+            {categoryLabel}
           </span>
         )}
         <span className="text-xs text-gray-400 truncate flex-1">{formatCompetition(match.competition)}</span>
@@ -147,9 +156,9 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
 
       {/* Corps: logos + noms + score */}
       <div className="flex items-center gap-3">
-        <TeamLogo url={clubLogo} alt={teamLabel(clubTeam)} size="lg" />
+        <TeamLogo url={clubLogo} alt="HBSME" size="lg" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-900 truncate">{teamLabel(clubTeam)}</p>
+          <p className="text-sm font-bold text-gray-900 truncate">HBSME</p>
           <p className="text-xs text-gray-400">{home ? 'Domicile' : 'Extérieur'}</p>
         </div>
 
@@ -423,7 +432,8 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
           const clubTeam = home ? m.team1 : m.team2
           const oppTeam = home ? m.team2 : m.team1
           const oppLogo = logoUrl(home ? m.logo2 : m.logo1)
-          const category = teamCategory(m.competition)
+          const teamNum = clubTeamNumber(clubTeam)
+          const categoryLabel = teamNum ? `${teamCategory(m.competition)}${teamNum}` : teamCategory(m.competition)
           const time = m.date
             ? new Date(m.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
             : '—:—'
@@ -435,15 +445,15 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
             >
               <span className={`${t.time} font-mono font-bold text-lg tabular-nums`}>{time}</span>
 
-              {category ? (
+              {categoryLabel ? (
                 <span className={`text-xs font-black ${t.catText} ${t.catBg} border rounded px-1.5 py-0.5 text-center w-fit`}>
-                  {category}
+                  {categoryLabel}
                 </span>
               ) : <span />}
 
               <div className="flex items-center gap-2 min-w-0">
                 <img src="/logo-hbsme.png" alt="HBSME" className="w-7 h-7 object-contain shrink-0 opacity-90" />
-                <span className={`${t.teamText} font-bold text-sm truncate`}>{teamLabel(clubTeam)}</span>
+                <span className={`${t.teamText} font-bold text-sm truncate`}>HBSME</span>
               </div>
 
               <div className="flex items-center gap-2 min-w-0">

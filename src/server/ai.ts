@@ -135,13 +135,18 @@ function buildPrompt(currentWeek: Match[], history: Match[]): string {
           .join('\n\n')
       : ''
 
-  const currentSection =
-    currentGroups.length > 0
-      ? `## Résultats de ce week-end\n\n` +
-        currentGroups
-          .map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`)
-          .join('\n\n')
-      : '## Ce week-end\n\nAucun résultat disponible.'
+  const hasCurrentWeek = currentGroups.length > 0
+
+  const currentSection = hasCurrentWeek
+    ? `## Résultats de ce week-end\n\n` +
+      currentGroups
+        .map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`)
+        .join('\n\n')
+    : '## Ce week-end\n\nHBSME n\'avait pas de rencontres ce week-end.'
+
+  const taskInstruction = hasCurrentWeek
+    ? 'Rédige maintenant le résumé d\'actu du week-end dernier, en tenant compte du contexte des semaines précédentes si pertinent.'
+    : 'Il n\'y avait pas de match ce week-end. Rédige un court message (2-3 phrases) qui mentionne cette pause, et fait un bref rappel positif des résultats récents si pertinent.'
 
   return `Tu rédiges l'actu sportive du site web du Handball Saint-Médard d'Eyrans (HBSME), un club familial de Gironde.
 
@@ -165,7 +170,7 @@ ${currentSection}
 
 ---
 
-Rédige maintenant le résumé d'actu du week-end dernier, en tenant compte du contexte des semaines précédentes si pertinent.`
+${taskInstruction}`
 }
 
 // ─── fallback ────────────────────────────────────────────────────────────────
@@ -189,7 +194,8 @@ export async function generateWeekendSummary(
   currentWeek: Match[],
   history: Match[],
 ): Promise<string> {
-  if (currentWeek.length === 0) {
+  // Si pas de matchs cette semaine ET pas d'historique → fallback statique
+  if (currentWeek.length === 0 && history.length === 0) {
     return fallbackText([])
   }
 
