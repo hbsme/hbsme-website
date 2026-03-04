@@ -372,8 +372,8 @@ function Home() {
       <main className="max-w-6xl mx-auto px-4 pt-10 pb-16 space-y-20">
 
         {/* Actu du week-end + card anniversaire côte à côte */}
-        <section id="weekend">
-          <div className="flex gap-8 items-start">
+        <section id="weekend" className="pb-20 border-b border-gray-200">
+          <div className="flex gap-16 items-start">
 
             {/* Actu — prend tout l'espace disponible */}
             <div className="flex-1 min-w-0">
