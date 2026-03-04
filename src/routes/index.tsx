@@ -251,54 +251,77 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
 type TeamOverviewRow = Awaited<ReturnType<typeof getTeamOverview>>[number]
 
 function TeamsOverview({ teams }: { teams: TeamOverviewRow[] }) {
-  // Grouper par catégorie
-  const grouped = new Map<string, TeamOverviewRow[]>()
+  // Compter les entrées par catégorie pour numéroter si > 1
+  const countPerCat = new Map<string, number>()
   for (const t of teams) {
     const cat = teamCategory(t.competition)
-    if (!grouped.has(cat)) grouped.set(cat, [])
-    grouped.get(cat)!.push(t)
+    countPerCat.set(cat, (countPerCat.get(cat) ?? 0) + 1)
   }
-  const sorted = Array.from(grouped.entries())
-    .sort(([a], [b]) => (CATEGORY_ORDER[a] ?? 99) - (CATEGORY_ORDER[b] ?? 99))
+  // Assigner un label à chaque entrée (11G ou 11G1 / 11G2)
+  const indexPerCat = new Map<string, number>()
+  const entries = [...teams]
+    .sort((a, b) => (CATEGORY_ORDER[teamCategory(a.competition)] ?? 99) - (CATEGORY_ORDER[teamCategory(b.competition)] ?? 99))
+    .map(t => {
+      const cat = teamCategory(t.competition)
+      const count = countPerCat.get(cat) ?? 1
+      const idx = (indexPerCat.get(cat) ?? 0) + 1
+      indexPerCat.set(cat, idx)
+      const label = count > 1 ? `${cat}${idx}` : cat
+      return { ...t, label }
+    })
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {sorted.map(([cat, entries]) => (
-        <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-4 py-3 bg-pink-50 border-b border-pink-100 flex items-center gap-2">
-            <span className="text-sm font-black text-pink-800 bg-white border border-pink-200 rounded-lg px-2.5 py-0.5">
-              {cat}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {entries.map((t) => (
+        <div key={t.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+          {/* Barre colorée top */}
+          <div className="h-1.5 bg-gradient-to-r from-pink-500 to-rose-400" />
+
+          {/* Header : badge + catégorie */}
+          <div className="px-4 pt-4 pb-2 flex items-center gap-2">
+            <span className="text-sm font-black text-pink-800 bg-pink-50 border border-pink-200 rounded-lg px-2.5 py-0.5 shrink-0">
+              {t.label}
             </span>
-            <span className="text-xs text-gray-400 font-medium">{formatCompetition(entries[0].competition)}</span>
+            <span className="text-xs text-gray-400 truncate">{formatCompetition(t.competition)}</span>
           </div>
-          <div className="divide-y divide-gray-50">
-            {entries.map((t) => (
-              <div key={t.id} className="px-4 py-3 flex items-center gap-3">
-                {/* Classement */}
-                <div className="text-center shrink-0 w-10">
-                  <span className="text-lg font-black text-gray-800">{ordinal(t.score_place)}</span>
-                </div>
-                {/* Phase + points */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-700 truncate">{formatPhase(t.phase)}</p>
-                  <p className="text-xs text-gray-400">
-                    {t.score_point} pts · {t.score_joue}J {t.score_gagne}V {t.score_nul}N {t.score_perdu}D
-                  </p>
-                </div>
-                {/* Lien FFHB */}
-                {t.url && (
-                  <a
-                    href={t.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 text-xs font-semibold text-pink-700 hover:text-pink-900 border border-pink-200 hover:border-pink-400 rounded-lg px-2 py-1 transition-colors"
-                  >
-                    FFHB ↗
-                  </a>
-                )}
-              </div>
-            ))}
+
+          {/* Phase */}
+          <p className="px-4 text-sm font-semibold text-gray-700 truncate">{formatPhase(t.phase)}</p>
+
+          {/* Stats */}
+          <div className="px-4 py-3 mt-1">
+            {/* Classement bien visible */}
+            <div className="flex items-baseline gap-1.5 mb-3">
+              <span className="text-3xl font-black text-gray-900">{ordinal(t.score_place)}</span>
+              <span className="text-xs text-gray-400">de la poule · {t.score_point} pts</span>
+            </div>
+            {/* Tableau compact J/V/N/D */}
+            <div className="grid grid-cols-4 text-center text-xs rounded-xl overflow-hidden border border-gray-100">
+              {(['J', 'V', 'N', 'D'] as const).map((col, i) => {
+                const val = [t.score_joue, t.score_gagne, t.score_nul, t.score_perdu][i]
+                return (
+                  <div key={col} className={`py-2 ${i < 3 ? 'border-r border-gray-100' : ''}`}>
+                    <p className="text-gray-400 font-medium">{col}</p>
+                    <p className="font-bold text-gray-700">{val ?? 0}</p>
+                  </div>
+                )
+              })}
+            </div>
           </div>
+
+          {/* Lien FFHB */}
+          {t.url && (
+            <div className="px-4 pb-4 mt-auto">
+              <a
+                href={t.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center text-xs font-semibold text-pink-700 hover:text-white hover:bg-pink-700 border border-pink-200 hover:border-pink-700 rounded-xl py-2 transition-all"
+              >
+                Voir sur FFHB ↗
+              </a>
+            </div>
+          )}
         </div>
       ))}
     </div>
