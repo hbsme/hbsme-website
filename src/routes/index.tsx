@@ -3,6 +3,7 @@ import { generateWeekendSummary } from '../server/ai'
 import {
   formatCompetition,
   getMatchHistory,
+  getPartenaires,
   getRecentResults,
   getStandings,
   getUpcomingBirthdays,
@@ -15,7 +16,7 @@ import {
 export const Route = createFileRoute('/')({
   component: Home,
   loader: async () => {
-    const [upcoming, results, standings, birthdays, weekendMatches, matchHistory] =
+    const [upcoming, results, standings, birthdays, weekendMatches, matchHistory, partenaires] =
       await Promise.all([
         getUpcomingMatches(),
         getRecentResults(),
@@ -23,6 +24,7 @@ export const Route = createFileRoute('/')({
         getUpcomingBirthdays(),
         getWeekendNews(),
         getMatchHistory(),
+        getPartenaires(),
       ])
 
     // Historique = tous les matchs passés SAUF le week-end en cours
@@ -30,7 +32,7 @@ export const Route = createFileRoute('/')({
     const history = matchHistory.filter(m => !weekendIds.has(m.matchId))
 
     const weekendSummary = await generateWeekendSummary(weekendMatches, history)
-    return { upcoming, results, standings, birthdays, weekendMatches, weekendSummary }
+    return { upcoming, results, standings, birthdays, weekendMatches, weekendSummary, partenaires }
   },
 })
 
@@ -94,6 +96,22 @@ function matchResult(score1: string | null, score2: string | null, team1: string
 }
 
 type WeekendMatches = Awaited<ReturnType<typeof getWeekendNews>>
+
+/** Rendu inline de **gras** et *italique* markdown */
+function FormattedText({ text, className }: { text: string; className?: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
+  return (
+    <span className={className}>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**'))
+          return <strong key={i} className="font-semibold text-gray-800">{part.slice(2, -2)}</strong>
+        if (part.startsWith('*') && part.endsWith('*'))
+          return <em key={i}>{part.slice(1, -1)}</em>
+        return <span key={i}>{part}</span>
+      })}
+    </span>
+  )
+}
 
 // ─── sub-components ───────────────────────────────────────────────────────────
 
@@ -481,7 +499,7 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
 // ─── main page ────────────────────────────────────────────────────────────────
 
 function Home() {
-  const { upcoming, results, standings, birthdays, weekendMatches, weekendSummary } = Route.useLoaderData()
+  const { upcoming, results, standings, birthdays, weekendMatches, weekendSummary, partenaires } = Route.useLoaderData()
 
   const sortedResults = [...results].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
   const sortedUpcoming = [...upcoming].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
@@ -567,7 +585,7 @@ function Home() {
                 </span>
               </div>
               <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                <p className="text-gray-600 leading-relaxed text-base">{weekendText}</p>
+                <FormattedText text={weekendText} className="text-gray-600 leading-relaxed text-base" />
                 {weekendMatches.length > 0 && (
                   <p className="text-xs text-gray-300 mt-4">
                     Basé sur {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} du week-end.
@@ -629,6 +647,41 @@ function Home() {
         </section>
 
       </main>
+
+      {/* Partenaires */}
+      {partenaires.length > 0 && (
+        <section className="border-t border-gray-100 bg-white py-12 px-4">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-center text-sm text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+              Notre club de handball s'épanouit grâce au soutien de partenaires dynamiques et engagés.
+              Leurs contributions nous permettent d'offrir à nos licenciés un environnement sportif de qualité
+              et d'organiser des événements fédérateurs.
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-4">
+              {partenaires.map((p) => {
+                const logo = (
+                  <img
+                    key={p.id}
+                    src={`/partenaires/${p.logo}`}
+                    alt={p.name}
+                    title={p.name}
+                    className="h-10 max-w-[120px] object-contain opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                  />
+                )
+                return p.url
+                  ? <a key={p.id} href={p.url} target="_blank" rel="noopener noreferrer">{logo}</a>
+                  : logo
+              })}
+            </div>
+            <p className="text-center mt-6">
+              <Link to="/partenaires" className="text-xs text-gray-400 hover:text-pink-700 transition-colors">
+                Voir tous nos partenaires →
+              </Link>
+            </p>
+          </div>
+        </section>
+      )}
 
       <footer className="border-t border-gray-100 bg-white py-10 text-center text-gray-300 text-sm">
         <p className="font-bold text-gray-400 mb-1">Handball Saint-Médard d'Eyrans</p>
