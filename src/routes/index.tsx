@@ -231,10 +231,10 @@ function formatName(firstname: string, lastname: string) {
 
 function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]; compact?: boolean }) {
   const today = new Date()
-  // Construire les 7 prochains jours
-  const days = Array.from({ length: 7 }, (_, i) => {
+  // Construire J-2 → J+5 (8 jours)
+  const days = Array.from({ length: 8 }, (_, i) => {
     const d = new Date(today)
-    d.setDate(today.getDate() + i)
+    d.setDate(today.getDate() - 2 + i)
     return d
   })
 
@@ -256,15 +256,16 @@ function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]
       {days.map((d, i) => {
         const key = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
         const people = byDay[key] || []
-        const isToday = i === 0
+        const isToday = i === 2  // index 2 = today (après J-2, J-1)
+        const isPast = i < 2
 
         return (
           <div
             key={key}
-            className={`flex items-center gap-3 ${px} ${py} border-b border-gray-50 last:border-0 ${isToday ? 'bg-rose-50' : ''}`}
+            className={`flex items-center gap-3 ${px} ${py} border-b border-gray-50 last:border-0 ${isToday ? 'bg-rose-50' : isPast ? 'opacity-50' : ''}`}
           >
             {/* Badge date */}
-            <div className={`rounded-lg ${badgeSize} shrink-0 flex flex-col items-center py-1 ${isToday ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+            <div className={`rounded-lg ${badgeSize} shrink-0 flex flex-col items-center py-1 ${isToday ? 'bg-rose-500 text-white' : isPast ? 'bg-gray-200 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
               <span className="text-xs font-semibold leading-none">{DAYS_FR[d.getDay()]}</span>
               <span className="text-[10px] leading-none mt-0.5 opacity-70">{MONTHS_FR[d.getMonth()]}</span>
               <span className={`${compact ? 'text-sm' : 'text-base'} font-black leading-tight ${isToday ? 'text-white' : 'text-gray-700'}`}>{d.getDate()}</span>
@@ -275,7 +276,7 @@ function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]
               {people.length === 0 ? (
                 <span className={`${compact ? 'text-xs' : 'text-sm'} text-gray-300`}>—</span>
               ) : (
-                <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${isToday ? 'text-rose-700' : 'text-gray-700'} truncate block`}>
+                <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${isToday ? 'text-rose-700' : isPast ? 'text-gray-400 line-through' : 'text-gray-700'} truncate block`}>
                   {isToday && '🎉 '}{people.map(p => formatName(p.firstname, p.lastname)).join(', ')}
                 </span>
               )}
