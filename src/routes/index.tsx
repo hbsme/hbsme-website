@@ -117,19 +117,28 @@ function FormattedText({ text, className }: { text: string; className?: string }
 
 function TeamLogo({ url, alt, size = 'md' }: { url: string | null; alt: string; size?: 'sm' | 'md' | 'lg' }) {
   const dim = size === 'sm' ? 'w-8 h-8' : size === 'lg' ? 'w-14 h-14' : 'w-10 h-10'
-  if (!url) {
-    return (
-      <div className={`${dim} rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-400 font-bold shrink-0`}>
-        {alt.substring(0, 2)}
-      </div>
-    )
-  }
+  const initials = alt.replace(/^(HANDBALL|HBC|HB|HA|AS|US|SH|SP|ST|STADE|CLUB|UNION|ENTENTE)\s+/i, '').substring(0, 2).toUpperCase()
+  const fallback = (
+    <div className={`${dim} rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-400 font-bold shrink-0`}>
+      {initials}
+    </div>
+  )
+  if (!url) return fallback
   return (
     <img
       src={url}
       alt={alt}
       className={`${dim} rounded-full object-contain bg-white border border-gray-100 p-0.5 shrink-0`}
-      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+      onError={(e) => {
+        const img = e.currentTarget
+        const parent = img.parentNode
+        if (parent) {
+          const div = document.createElement('div')
+          div.className = `${dim} rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-400 font-bold shrink-0`
+          div.textContent = initials
+          parent.replaceChild(div, img)
+        }
+      }}
     />
   )
 }
