@@ -5,7 +5,7 @@ import {
   getMatchHistory,
   getPartenaires,
   getRecentResults,
-  getStandings,
+  getTeamOverview,
   getUpcomingBirthdays,
   getUpcomingMatches,
   getWeekendNews,
@@ -16,11 +16,11 @@ import {
 export const Route = createFileRoute('/')({
   component: Home,
   loader: async () => {
-    const [upcoming, results, standings, birthdays, weekendMatches, matchHistory, partenaires] =
+    const [upcoming, results, teamOverview, birthdays, weekendMatches, matchHistory, partenaires] =
       await Promise.all([
         getUpcomingMatches(),
         getRecentResults(),
-        getStandings(),
+        getTeamOverview(),
         getUpcomingBirthdays(),
         getWeekendNews(),
         getMatchHistory(),
@@ -32,7 +32,7 @@ export const Route = createFileRoute('/')({
     const history = matchHistory.filter(m => !weekendIds.has(m.matchId))
 
     const weekendSummary = await generateWeekendSummary(weekendMatches, history)
-    return { upcoming, results, standings, birthdays, weekendMatches, weekendSummary, partenaires }
+    return { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, partenaires }
   },
 })
 
@@ -47,6 +47,24 @@ const CATEGORY_ORDER: Record<string, number> = {
 
 function categorySortKey(competition: string): number {
   return CATEGORY_ORDER[teamCategory(competition)] ?? 99
+}
+
+function ordinal(n: number | null): string {
+  if (!n) return '—'
+  return n === 1 ? '1er' : `${n}e`
+}
+
+function formatPhase(phase: string): string {
+  return phase
+    .replace(/^(U\d+|[+]\s*16)\s+(MASCULIN[ES]?|F[ÉE]MININ[EES]?|FILLES?)\s*/i, '')
+    .replace(/_PHASE\s*(\d+)/gi, ' Ph.$1')
+    .replace(/_P(\d+)\b/gi, '')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '')
+    .join(' ')
+    .trim()
 }
 
 /** Extrait le numéro d'équipe HBSME (ex: "HBSME 1" → "1"), null si pas de numéro */
@@ -230,48 +248,59 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
   )
 }
 
-type TeamRow = Awaited<ReturnType<typeof getStandings>>[number]
+type TeamOverviewRow = Awaited<ReturnType<typeof getTeamOverview>>[number]
 
-function StandingsGroup({ label, teams }: { label: string; teams: TeamRow[] }) {
+function TeamsOverview({ teams }: { teams: TeamOverviewRow[] }) {
+  // Grouper par catégorie
+  const grouped = new Map<string, TeamOverviewRow[]>()
+  for (const t of teams) {
+    const cat = teamCategory(t.competition)
+    if (!grouped.has(cat)) grouped.set(cat, [])
+    grouped.get(cat)!.push(t)
+  }
+  const sorted = Array.from(grouped.entries())
+    .sort(([a], [b]) => (CATEGORY_ORDER[a] ?? 99) - (CATEGORY_ORDER[b] ?? 99))
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-        <h3 className="text-sm font-bold text-gray-700">{label}</h3>
-      </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-xs text-gray-400 border-b border-gray-100">
-            <th className="text-left px-4 py-2">#</th>
-            <th className="text-left px-4 py-2">Équipe</th>
-            <th className="text-center px-2 py-2 hidden sm:table-cell">J</th>
-            <th className="text-center px-2 py-2 hidden sm:table-cell">G</th>
-            <th className="text-center px-2 py-2 hidden sm:table-cell">N</th>
-            <th className="text-center px-2 py-2 hidden sm:table-cell">P</th>
-            <th className="text-center px-4 py-2 text-gray-500">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teams.map((t) => {
-            const isClub = t.team.includes('SAINT MEDARD')
-            return (
-              <tr
-                key={t.id}
-                className={`border-b border-gray-50 last:border-0 ${isClub ? 'bg-pink-50' : 'hover:bg-gray-50'}`}
-              >
-                <td className="px-4 py-2.5 text-gray-400 text-xs">{t.score_place}</td>
-                <td className={`px-4 py-2.5 font-semibold text-sm ${isClub ? 'text-pink-800' : 'text-gray-700'}`}>
-                  {isClub ? 'HBSME' : teamLabel(t.team)}
-                </td>
-                <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_joue}</td>
-                <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_gagne}</td>
-                <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_nul}</td>
-                <td className="text-center px-2 py-2.5 text-gray-400 text-xs hidden sm:table-cell">{t.score_perdu}</td>
-                <td className={`text-center px-4 py-2.5 font-bold text-sm ${isClub ? 'text-pink-800' : 'text-gray-800'}`}>{t.score_point}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {sorted.map(([cat, entries]) => (
+        <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 bg-pink-50 border-b border-pink-100 flex items-center gap-2">
+            <span className="text-sm font-black text-pink-800 bg-white border border-pink-200 rounded-lg px-2.5 py-0.5">
+              {cat}
+            </span>
+            <span className="text-xs text-gray-400 font-medium">{formatCompetition(entries[0].competition)}</span>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {entries.map((t) => (
+              <div key={t.id} className="px-4 py-3 flex items-center gap-3">
+                {/* Classement */}
+                <div className="text-center shrink-0 w-10">
+                  <span className="text-lg font-black text-gray-800">{ordinal(t.score_place)}</span>
+                </div>
+                {/* Phase + points */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-700 truncate">{formatPhase(t.phase)}</p>
+                  <p className="text-xs text-gray-400">
+                    {t.score_point} pts · {t.score_joue}J {t.score_gagne}V {t.score_nul}N {t.score_perdu}D
+                  </p>
+                </div>
+                {/* Lien FFHB */}
+                {t.url && (
+                  <a
+                    href={t.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 text-xs font-semibold text-pink-700 hover:text-pink-900 border border-pink-200 hover:border-pink-400 rounded-lg px-2 py-1 transition-colors"
+                  >
+                    FFHB ↗
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -529,21 +558,10 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
 // ─── main page ────────────────────────────────────────────────────────────────
 
 function Home() {
-  const { upcoming, results, standings, birthdays, weekendMatches, weekendSummary, partenaires } = Route.useLoaderData()
+  const { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, partenaires } = Route.useLoaderData()
 
   const sortedResults = [...results].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
   const sortedUpcoming = [...upcoming].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
-
-  const standingGroups = standings.reduce<Record<string, TeamRow[]>>((acc, t) => {
-    const label = formatCompetition(t.competition)
-    if (!acc[label]) acc[label] = []
-    acc[label].push(t)
-    return acc
-  }, {})
-
-  const sortedStandingGroups = Object.entries(standingGroups)
-    .sort(([, a], [, b]) => categorySortKey(a[0].competition) - categorySortKey(b[0].competition))
-
   const weekendText = weekendSummary
 
   return (
@@ -668,12 +686,8 @@ function Home() {
 
         {/* Classements */}
         <section id="classements">
-          <h2 className="text-2xl font-black text-gray-900 mb-6">Classements</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {sortedStandingGroups.map(([label, teams]) => (
-              <StandingsGroup key={label} label={label} teams={teams} />
-            ))}
-          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-6">Nos équipes</h2>
+          <TeamsOverview teams={teamOverview} />
         </section>
 
       </main>

@@ -131,6 +131,30 @@ export const getWeekendNews = createServerFn().handler(async () => {
   return rows
 })
 
+export const getTeamOverview = createServerFn().handler(async () => {
+  // Toutes les entrées HBSME avec matchs joués
+  const rows = await db
+    .select()
+    .from(ffhbTeam)
+    .where(
+      and(
+        sql`${ffhbTeam.team} ILIKE '%SAINT MEDARD%'`,
+        isNotNull(ffhbTeam.score_place),
+        sql`COALESCE(${ffhbTeam.score_joue}, 0) > 0`,
+      ),
+    )
+    .orderBy(asc(ffhbTeam.competition), desc(ffhbTeam.firstday))
+
+  // Ne garder que les entrées avec le firstday le plus récent par compétition
+  const maxFirstday = new Map<string, string>()
+  for (const row of rows) {
+    const fd = row.firstday ?? ''
+    const cur = maxFirstday.get(row.competition)
+    if (!cur || fd > cur) maxFirstday.set(row.competition, fd)
+  }
+  return rows.filter(row => row.firstday === maxFirstday.get(row.competition))
+})
+
 export const getMatchHistory = createServerFn().handler(async () => {
   // Récupère les 8 dernières semaines de résultats (pour contexte IA)
   const rows = await db
