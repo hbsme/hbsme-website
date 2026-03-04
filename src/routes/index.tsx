@@ -305,7 +305,7 @@ function Home() {
     <div className="min-h-screen bg-gray-50 text-gray-900">
 
       {/* Header */}
-      <header className="border-b border-gray-200 sticky top-0 z-10 backdrop-blur bg-white/90">
+      <header className="border-b border-gray-200 sticky top-0 z-10 backdrop-blur bg-gradient-to-b from-white/95 to-white/80">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={CLUB_LOGO} alt="Logo HBSME" className="w-9 h-9 object-contain" />
@@ -325,7 +325,7 @@ function Home() {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-white via-white to-rose-50 border-b border-rose-100 pb-20">
+      <section className="bg-gradient-to-br from-white via-white to-rose-50 border-b border-rose-100 pb-10">
         <div className="max-w-6xl mx-auto px-4 pt-16 flex flex-col md:flex-row items-center gap-10">
           <div className="flex-1">
             <p className="text-rose-500 text-sm font-bold tracking-widest uppercase mb-3">
@@ -354,8 +354,8 @@ function Home() {
         </div>
       </section>
 
-      {/* Calendrier anniversaires — flottant entre hero et contenu */}
-      <div className="relative z-10 -mt-12">
+      {/* Calendrier anniversaires — flottant, h-0 pour ne pas pousser le contenu */}
+      <div className="relative z-10 h-0 overflow-visible -mt-6">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-end">
             <div className="relative w-56" id="anniversaires">
