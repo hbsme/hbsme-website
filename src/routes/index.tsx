@@ -129,7 +129,7 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
   }
 
   return (
-    <div className="bg-white rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow border border-gray-100 shadow-sm">
+    <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow border border-gray-100 shadow-sm">
       {/* Header: catégorie + compétition + résultat */}
       <div className="flex items-center gap-2">
         {category && (
