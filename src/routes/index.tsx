@@ -234,7 +234,7 @@ function BirthdayCard({ person }: { person: BirthdayRow }) {
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-bold capitalize truncate ${isToday ? 'text-rose-700' : 'text-gray-800'}`}>
           {person.firstname.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}{' '}
-          {person.lastname.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}
+          {person.lastname.charAt(0).toUpperCase()}.
         </p>
         <p className="text-xs text-gray-400">{age} ans · {formatDate(person.birthdate, false)}</p>
       </div>
@@ -312,6 +312,21 @@ function Home() {
 
       <main className="max-w-6xl mx-auto px-4 py-16 space-y-20">
 
+        {/* Anniversaires */}
+        <section id="anniversaires">
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-2xl font-black text-gray-900">🎂 Anniversaires</h2>
+            <span className="text-xs text-gray-400">cette semaine</span>
+          </div>
+          {birthdays.length === 0 ? (
+            <p className="text-gray-400">Aucun anniversaire cette semaine.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {birthdays.map((p, i) => <BirthdayCard key={i} person={p} />)}
+            </div>
+          )}
+        </section>
+
         {/* Actu du week-end */}
         <section id="weekend">
           <div className="flex items-center gap-3 mb-6">
@@ -368,7 +383,7 @@ function Home() {
         <section id="anniversaires">
           <div className="flex items-center gap-3 mb-6">
             <h2 className="text-2xl font-black text-gray-900">Anniversaires</h2>
-            <span className="text-xs text-gray-400">14 prochains jours</span>
+            <span className="text-xs text-gray-400">7 prochains jours</span>
           </div>
           {birthdays.length === 0 ? (
             <p className="text-gray-400">Aucun anniversaire dans les 14 prochains jours.</p>

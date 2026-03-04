@@ -84,7 +84,7 @@ export const getUpcomingBirthdays = createServerFn().handler(async () => {
           EXTRACT(YEAR FROM NOW())::int,
           EXTRACT(MONTH FROM ${licencee.birthdate})::int,
           EXTRACT(DAY FROM ${licencee.birthdate})::int
-        ) BETWEEN NOW()::date AND (NOW() + interval '14 days')::date
+        ) BETWEEN NOW()::date AND (NOW() + interval '7 days')::date
       `,
     )
     .orderBy(
