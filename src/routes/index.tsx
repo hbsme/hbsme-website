@@ -229,7 +229,7 @@ function formatName(firstname: string, lastname: string) {
   return `${fn} ${lastname.charAt(0).toUpperCase()}.`
 }
 
-function BirthdayWeek({ birthdays }: { birthdays: BirthdayRow[] }) {
+function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]; compact?: boolean }) {
   const today = new Date()
   // Construire les 7 prochains jours
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -247,8 +247,12 @@ function BirthdayWeek({ birthdays }: { birthdays: BirthdayRow[] }) {
     byDay[key].push(p)
   }
 
+  const px = compact ? 'px-3' : 'px-4'
+  const py = compact ? 'py-1.5' : 'py-3'
+  const badgeSize = compact ? 'w-10' : 'w-12'
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className={compact ? '' : 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'}>
       {days.map((d, i) => {
         const key = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
         const people = byDay[key] || []
@@ -257,21 +261,21 @@ function BirthdayWeek({ birthdays }: { birthdays: BirthdayRow[] }) {
         return (
           <div
             key={key}
-            className={`flex items-center gap-4 px-4 py-3 border-b border-gray-50 last:border-0 ${isToday ? 'bg-rose-50' : ''}`}
+            className={`flex items-center gap-3 ${px} ${py} border-b border-gray-50 last:border-0 ${isToday ? 'bg-rose-50' : ''}`}
           >
             {/* Badge date */}
-            <div className={`rounded-xl w-12 shrink-0 flex flex-col items-center py-1.5 ${isToday ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+            <div className={`rounded-lg ${badgeSize} shrink-0 flex flex-col items-center py-1 ${isToday ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
               <span className="text-xs font-semibold leading-none">{DAYS_FR[d.getDay()]}</span>
-              <span className="text-xs leading-none mt-0.5 opacity-70">{MONTHS_FR[d.getMonth()]}</span>
-              <span className={`text-base font-black leading-tight ${isToday ? 'text-white' : 'text-gray-700'}`}>{d.getDate()}</span>
+              <span className="text-[10px] leading-none mt-0.5 opacity-70">{MONTHS_FR[d.getMonth()]}</span>
+              <span className={`${compact ? 'text-sm' : 'text-base'} font-black leading-tight ${isToday ? 'text-white' : 'text-gray-700'}`}>{d.getDate()}</span>
             </div>
 
             {/* Noms */}
             <div className="flex-1 min-w-0">
               {people.length === 0 ? (
-                <span className="text-sm text-gray-300">—</span>
+                <span className={`${compact ? 'text-xs' : 'text-sm'} text-gray-300`}>—</span>
               ) : (
-                <span className={`text-sm font-medium ${isToday ? 'text-rose-700' : 'text-gray-700'}`}>
+                <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${isToday ? 'text-rose-700' : 'text-gray-700'} truncate block`}>
                   {isToday && '🎉 '}{people.map(p => formatName(p.firstname, p.lastname)).join(', ')}
                 </span>
               )}
@@ -321,8 +325,8 @@ function Home() {
       </header>
 
       {/* Hero */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-16 flex flex-col md:flex-row items-center gap-10">
+      <section className="bg-gradient-to-br from-white via-white to-rose-50 border-b border-rose-100 pb-20">
+        <div className="max-w-6xl mx-auto px-4 pt-16 flex flex-col md:flex-row items-center gap-10">
           <div className="flex-1">
             <p className="text-rose-500 text-sm font-bold tracking-widest uppercase mb-3">
               Handball Club · Gironde
@@ -350,16 +354,31 @@ function Home() {
         </div>
       </section>
 
-      <main className="max-w-6xl mx-auto px-4 py-16 space-y-20">
-
-        {/* Anniversaires */}
-        <section id="anniversaires">
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-black text-gray-900">🎂 Anniversaires</h2>
-            <span className="text-xs text-gray-400">cette semaine</span>
+      {/* Calendrier anniversaires — flottant entre hero et contenu */}
+      <div className="relative z-10 -mt-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-end">
+            <div className="relative w-56" id="anniversaires">
+              {/* Pin */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 drop-shadow-md">
+                <div className="w-6 h-6 rounded-full bg-rose-500 border-2 border-rose-600 shadow-lg flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white opacity-60" />
+                </div>
+              </div>
+              {/* Carte */}
+              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-300">
+                {/* En-tête */}
+                <div className="bg-rose-500 px-3 py-2 text-center">
+                  <p className="text-white text-xs font-black tracking-widest uppercase">🎂 Anniversaires</p>
+                </div>
+                <BirthdayWeek birthdays={birthdays} compact />
+              </div>
+            </div>
           </div>
-          <BirthdayWeek birthdays={birthdays} />
-        </section>
+        </div>
+      </div>
+
+      <main className="max-w-6xl mx-auto px-4 pt-10 pb-16 space-y-20">
 
         {/* Actu du week-end */}
         <section id="weekend">
