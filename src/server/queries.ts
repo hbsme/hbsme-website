@@ -53,13 +53,28 @@ export const getUpcomingMatches = createServerFn().handler(async () => {
 })
 
 export const getRecentResults = createServerFn().handler(async () => {
-  const rows = await db
+  // Retourne tous les résultats depuis lundi dernier (même fenêtre que l'actu)
+  // Si rien cette semaine, repli sur les 12 derniers pour ne pas afficher une section vide
+  const lastMonday = sql`(NOW() - (EXTRACT(DOW FROM NOW())::int + 6) * interval '1 day')::date`
+  const thisWeek = await db
+    .select()
+    .from(ffhbMatch)
+    .where(
+      and(
+        isNotNull(ffhbMatch.score1),
+        sql`${ffhbMatch.date} >= ${lastMonday}`,
+        sql`${ffhbMatch.date} < NOW()`,
+      ),
+    )
+    .orderBy(desc(ffhbMatch.date))
+  if (thisWeek.length > 0) return thisWeek
+  // Semaine sans matchs → on affiche les derniers résultats connus
+  return db
     .select()
     .from(ffhbMatch)
     .where(isNotNull(ffhbMatch.score1))
     .orderBy(desc(ffhbMatch.date))
-    .limit(8)
-  return rows
+    .limit(12)
 })
 
 export const getStandings = createServerFn().handler(async () => {
