@@ -1,8 +1,7 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { tmpdir } from 'node:os'
+import { createHash } from 'crypto'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
+import { tmpdir } from 'os'
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -213,6 +212,7 @@ export async function generateWeekendSummary(
   }
 
   try {
+    const { GoogleGenerativeAI } = await import('@google/generative-ai')
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' })
     const prompt = buildPrompt(currentWeek, history)
