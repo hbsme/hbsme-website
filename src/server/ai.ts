@@ -206,7 +206,7 @@ export async function generateWeekendSummary(
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
     const prompt = buildPrompt(currentWeek, history)
 
     const result = await model.generateContent(prompt)
