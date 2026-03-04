@@ -265,10 +265,9 @@ function BirthdayWeek({ birthdays, compact = false }: { birthdays: BirthdayRow[]
             className={`flex items-center gap-3 ${px} ${py} border-b border-gray-50 last:border-0 ${isToday ? 'bg-rose-50' : isPast ? 'opacity-50' : ''}`}
           >
             {/* Badge date */}
-            <div className={`rounded-lg ${badgeSize} shrink-0 flex flex-col items-center py-1 ${isToday ? 'bg-rose-500 text-white' : isPast ? 'bg-gray-200 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
-              <span className="text-xs font-semibold leading-none">{DAYS_FR[d.getDay()]}</span>
-              <span className="text-[10px] leading-none mt-0.5 opacity-70">{MONTHS_FR[d.getMonth()]}</span>
-              <span className={`${compact ? 'text-sm' : 'text-base'} font-black leading-tight ${isToday ? 'text-white' : 'text-gray-700'}`}>{d.getDate()}</span>
+            <div className={`rounded-lg px-2 py-1 shrink-0 flex items-center gap-1 ${isToday ? 'bg-rose-500 text-white' : isPast ? 'bg-gray-200 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+              <span className="text-xs font-semibold">{DAYS_FR[d.getDay()]}</span>
+              <span className={`${compact ? 'text-sm' : 'text-base'} font-black ${isToday ? 'text-white' : 'text-gray-700'}`}>{d.getDate()}</span>
             </div>
 
             {/* Noms */}
