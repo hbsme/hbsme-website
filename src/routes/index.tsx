@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { generateWeekendSummary } from '../server/ai'
+import { generateWeekendSummary } from '../lib/ai'
 import {
   formatCompetition,
   getMatchHistory,
