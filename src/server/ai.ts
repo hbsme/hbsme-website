@@ -158,7 +158,7 @@ function buildPrompt(currentWeek: Match[], history: Match[]): string {
 - Tu peux noter une tendance chiffrée si elle est flatteuse, sinon reste vague
 - **Jamais de formule comme "HBSME a écrasé", "défaite sévère", "belle correction"**
 - Langue : français, style fluide et chaleureux, pas de liste, pas de bullet points
-- Longueur : 3 à 5 phrases maximum
+- Longueur : 3 à 5 phrases, réparties en 2 paragraphes séparés par une ligne vide (`\n\n`)
 - Illustre tes remarques par des scores concrets quand c'est pertinent (ex : "une victoire *24-18*", "battus *15-22*")
 - Formate avec du markdown minimal : catégories d'équipes en gras (ex : **U11**, **U13**, **U18**, **Séniors**) et scores en italique (ex : *35-25*) — uniquement **gras** et *italique*, pas de titres ni listes
 - Termine obligatoirement par : "Allez Saint-Médard d'Eyrans ! 🤾"

@@ -115,19 +115,25 @@ function matchResult(score1: string | null, score2: string | null, team1: string
 
 type WeekendMatches = Awaited<ReturnType<typeof getWeekendNews>>
 
-/** Rendu inline de **gras** et *italique* markdown */
+/** Rendu de **gras**, *italique* et paragraphes (\n\n) */
 function FormattedText({ text, className }: { text: string; className?: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
+  const paragraphs = text.split(/\n\n+/).filter(Boolean)
+  const renderInline = (s: string) =>
+    s.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**'))
+        return <strong key={i} className="font-semibold text-gray-800">{part.slice(2, -2)}</strong>
+      if (part.startsWith('*') && part.endsWith('*'))
+        return <em key={i}>{part.slice(1, -1)}</em>
+      return <span key={i}>{part}</span>
+    })
   return (
-    <span className={className}>
-      {parts.map((part, i) => {
-        if (part.startsWith('**') && part.endsWith('**'))
-          return <strong key={i} className="font-semibold text-gray-800">{part.slice(2, -2)}</strong>
-        if (part.startsWith('*') && part.endsWith('*'))
-          return <em key={i}>{part.slice(1, -1)}</em>
-        return <span key={i}>{part}</span>
-      })}
-    </span>
+    <div className={className}>
+      {paragraphs.map((p, i) => (
+        <p key={i} className={`text-justify leading-relaxed ${i > 0 ? 'mt-3' : ''}`}>
+          {renderInline(p)}
+        </p>
+      ))}
+    </div>
   )
 }
 
@@ -656,7 +662,7 @@ function Home() {
                 </span>
               </div>
               <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                <FormattedText text={weekendText} className="text-gray-600 leading-relaxed text-base" />
+                <FormattedText text={weekendText} className="text-gray-600 text-base" />
                 {weekendMatches.length > 0 && (
                   <p className="text-xs text-gray-300 mt-4">
                     Basé sur {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} du week-end.
