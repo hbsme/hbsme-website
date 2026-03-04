@@ -154,7 +154,8 @@ function buildPrompt(currentWeek: Match[], history: Match[]): string {
 - **Jamais de formule comme "HBSME a écrasé", "défaite sévère", "belle correction"**
 - Langue : français, style fluide et chaleureux, pas de liste, pas de bullet points
 - Longueur : 3 à 5 phrases maximum
-- Termine obligatoirement par : "Allez Saint-Médard ! 🤾"
+- Illustre tes remarques par des scores concrets quand c'est pertinent (ex : "une victoire 24-18", "battus 15-22")
+- Termine obligatoirement par : "Allez Saint-Médard d'Eyrans ! 🤾"
 
 ---
 
@@ -171,11 +172,11 @@ Rédige maintenant le résumé d'actu du week-end dernier, en tenant compte du c
 
 function fallbackText(matches: Match[]): string {
   if (matches.length === 0) {
-    return 'Pas de matchs disputés ce week-end. Rendez-vous la semaine prochaine pour suivre nos équipes ! 🤾'
+    return 'Pas de matchs disputés ce week-end. Rendez-vous la semaine prochaine pour suivre nos équipes ! Allez Saint-Médard d\'Eyrans ! 🤾'
   }
   const wins = matches.filter(m => matchResult(m.score1, m.score2, m.team1) === 'win').length
   const total = matches.length
-  return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} ${total > 1 ? 'étaient' : 'était'} au programme pour nos équipes. ${wins > 0 ? `Avec ${wins} victoire${wins > 1 ? 's' : ''} au compteur, le bilan est encourageant.` : 'Malgré des résultats difficiles, nos joueurs ont montré de la combativité.'} Retrouvez le détail dans la section Résultats. Allez Saint-Médard ! 🤾`
+  return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} ${total > 1 ? 'étaient' : 'était'} au programme pour nos équipes. ${wins > 0 ? `Avec ${wins} victoire${wins > 1 ? 's' : ''} au compteur, le bilan est encourageant.` : 'Malgré des résultats difficiles, nos joueurs ont montré de la combativité.'} Retrouvez le détail dans la section Résultats. Allez Saint-Médard d'Eyrans ! 🤾`
 }
 
 // ─── main export ─────────────────────────────────────────────────────────────
