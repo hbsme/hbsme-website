@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-// import { generateWeekendSummary } from '../lib/ai'
+import { generateWeekendSummary } from '../lib/ai'
 import {
   formatCompetition,
   getMatchHistory,
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/')({
     const weekendIds = new Set(weekendMatches.map(m => m.matchId))
     const history = matchHistory.filter(m => !weekendIds.has(m.matchId))
 
-    const weekendSummary = 'Résumé temporairement désactivé.'
+    const weekendSummary = await generateWeekendSummary(weekendMatches, history)
     return { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, partenaires }
   },
 })

@@ -1,3 +1,8 @@
+import { createHash } from 'crypto'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
+
 // ─── types ───────────────────────────────────────────────────────────────────
 
 type Match = {
@@ -18,32 +23,21 @@ type CacheEntry = {
 
 // ─── cache ───────────────────────────────────────────────────────────────────
 
-function getCacheFile(): string {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const os = require('os') as typeof import('os')
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const path = require('path') as typeof import('path')
-  return path.join(os.tmpdir(), 'hbsme_weekend_summary.json')
-}
+const CACHE_FILE = join(tmpdir(), 'hbsme_weekend_summary.json')
 
 function computeHash(currentWeek: Match[], history: Match[]): string {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const crypto = require('crypto') as typeof import('crypto')
   const all = [...currentWeek, ...history]
   const stable = all
     .map(m => `${m.matchId ?? ''}:${m.score1 ?? ''}:${m.score2 ?? ''}`)
     .sort()
     .join('|')
-  return crypto.createHash('sha256').update(stable).digest('hex').slice(0, 16)
+  return createHash('sha256').update(stable).digest('hex').slice(0, 16)
 }
 
 function readCache(): CacheEntry | null {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const fs = require('fs') as typeof import('fs')
-    const file = getCacheFile()
-    if (!fs.existsSync(file)) return null
-    return JSON.parse(fs.readFileSync(file, 'utf-8')) as CacheEntry
+    if (!existsSync(CACHE_FILE)) return null
+    return JSON.parse(readFileSync(CACHE_FILE, 'utf-8')) as CacheEntry
   } catch {
     return null
   }
@@ -51,9 +45,7 @@ function readCache(): CacheEntry | null {
 
 function writeCache(entry: CacheEntry): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const fs = require('fs') as typeof import('fs')
-    fs.writeFileSync(getCacheFile(), JSON.stringify(entry), 'utf-8')
+    writeFileSync(CACHE_FILE, JSON.stringify(entry), 'utf-8')
   } catch {
     // non-critique
   }
@@ -99,16 +91,11 @@ function formatDate(raw: Date | string | null): string {
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
 }
 
-/**
- * Groupe les matchs par week-end (lundi de la semaine ISO).
- * Retourne un tableau de { label, matches }, du plus ancien au plus récent.
- */
 function groupByWeekend(matches: Match[]): Array<{ label: string; matches: Match[] }> {
   const groups: Map<string, Match[]> = new Map()
   for (const m of matches) {
     if (!m.date) continue
     const d = new Date(m.date)
-    // Lundi de la semaine = clé de groupe
     const day = d.getDay()
     const monday = new Date(d)
     monday.setDate(d.getDate() - ((day + 6) % 7))
@@ -139,7 +126,6 @@ function buildPrompt(currentWeek: Match[], history: Match[]): string {
       : ''
 
   const hasCurrentWeek = currentGroups.length > 0
-
   const currentSection = hasCurrentWeek
     ? `## Résultats de ce week-end\n\n` +
       currentGroups
@@ -157,13 +143,12 @@ function buildPrompt(currentWeek: Match[], history: Match[]): string {
 - Enthousiaste mais mesuré — évite les superlatifs excessifs ("brillant", "écrasé", "surclassé")
 - En cas de défaite : encourageant, bienveillant, jamais défaitiste
 - Valorise l'engagement des joueurs et l'esprit collectif, pas seulement les scores
-- Si tu observes une progression ou une série sur plusieurs semaines, mentionne-la avec modestie (ex : "les U13 semblent trouver leur rythme" plutôt que "domination totale")
-- Tu peux noter une tendance chiffrée si elle est flatteuse, sinon reste vague
+- Si tu observes une progression ou une série sur plusieurs semaines, mentionne-la avec modestie
 - **Jamais de formule comme "HBSME a écrasé", "défaite sévère", "belle correction"**
 - Langue : français, style fluide et chaleureux, pas de liste, pas de bullet points
-- Longueur : 3 à 5 phrases, réparties en 2 paragraphes séparés par une ligne vide (`\n\n`)
-- Illustre tes remarques par des scores concrets quand c'est pertinent (ex : "une victoire *24-18*", "battus *15-22*")
-- Formate avec du markdown minimal : catégories d'équipes en gras (ex : **U11**, **U13**, **U18**, **Séniors**) et scores en italique (ex : *35-25*) — uniquement **gras** et *italique*, pas de titres ni listes
+- Longueur : 3 à 5 phrases, réparties en 2 paragraphes séparés par une ligne vide (\`\`\\n\\n\`\`)
+- Formate avec du markdown minimal : catégories en gras (ex : **U11**, **U13**) et scores en italique (ex : *35-25*)
+- Illustre tes remarques par des scores concrets quand c'est pertinent
 - Termine obligatoirement par : "Allez Saint-Médard d'Eyrans ! 🤾"
 
 ---
@@ -181,29 +166,23 @@ ${taskInstruction}`
 
 function fallbackText(matches: Match[]): string {
   if (matches.length === 0) {
-    return 'Pas de matchs disputés ce week-end. Rendez-vous la semaine prochaine pour suivre nos équipes ! Allez Saint-Médard d\'Eyrans ! 🤾'
+    return "Pas de matchs disputés ce week-end. Rendez-vous la semaine prochaine pour suivre nos équipes ! Allez Saint-Médard d'Eyrans ! 🤾"
   }
   const wins = matches.filter(m => matchResult(m.score1, m.score2, m.team1) === 'win').length
   const total = matches.length
-  return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} ${total > 1 ? 'étaient' : 'était'} au programme pour nos équipes. ${wins > 0 ? `Avec ${wins} victoire${wins > 1 ? 's' : ''} au compteur, le bilan est encourageant.` : 'Malgré des résultats difficiles, nos joueurs ont montré de la combativité.'} Retrouvez le détail dans la section Résultats. Allez Saint-Médard d'Eyrans ! 🤾`
+  return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} ${total > 1 ? 'étaient' : 'était'} au programme pour nos équipes. ${wins > 0 ? `Avec ${wins} victoire${wins > 1 ? 's' : ''} au compteur, le bilan est encourageant.` : 'Malgré des résultats difficiles, nos joueurs ont montré de la combativité.'} Allez Saint-Médard d'Eyrans ! 🤾`
 }
 
 // ─── main export ─────────────────────────────────────────────────────────────
 
-/**
- * @param currentWeek  matchs du week-end en cours (pour l'actu principale)
- * @param history      matchs des semaines précédentes (pour le contexte IA)
- */
 export async function generateWeekendSummary(
   currentWeek: Match[],
   history: Match[],
 ): Promise<string> {
-  // Si pas de matchs cette semaine ET pas d'historique → fallback statique
   if (currentWeek.length === 0 && history.length === 0) {
     return fallbackText([])
   }
 
-  // Cache par hash de toutes les données
   const hash = computeHash(currentWeek, history)
   const cached = readCache()
   if (cached?.hash === hash) {
