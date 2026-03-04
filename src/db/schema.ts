@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, integer, timestamp, date } from 'drizzle-orm/pg-core'
+import { pgTable, serial, varchar, integer, timestamp, date, boolean, text } from 'drizzle-orm/pg-core'
 
 export const licencee = pgTable('licencee', {
   id: serial('id').primaryKey(),
@@ -26,6 +26,15 @@ export const ffhbMatch = pgTable('ffhb_match', {
   score2: varchar('score2', { length: 16 }),
   logo1: varchar('logo1', { length: 255 }),
   logo2: varchar('logo2', { length: 255 }),
+})
+
+export const partenaire = pgTable('partenaire', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  url: text('url'),
+  logo: text('logo').notNull(),
+  sortOrder: integer('sort_order').default(0),
+  active: boolean('active').default(true),
 })
 
 export const ffhbTeam = pgTable('ffhb_team', {

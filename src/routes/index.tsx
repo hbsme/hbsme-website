@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { generateWeekendSummary } from '../server/ai'
 import {
   formatCompetition,
@@ -517,6 +517,7 @@ function Home() {
             <a href="#matchs" className="hover:text-pink-800 transition-colors">Matchs</a>
             <a href="#classements" className="hover:text-pink-800 transition-colors">Classements</a>
             <a href="#anniversaires" className="hover:text-pink-800 transition-colors">Anniversaires</a>
+            <Link to="/partenaires" className="hover:text-pink-800 transition-colors font-semibold">Partenaires</Link>
           </nav>
         </div>
       </header>

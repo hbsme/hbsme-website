@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, desc, gt, isNotNull, isNull, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gt, isNotNull, isNull, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { ffhbMatch, ffhbTeam, licencee } from '../db/schema'
+import { ffhbMatch, ffhbTeam, licencee, partenaire } from '../db/schema'
 
 const CLUB = 'HANDBALL SAINT MEDARD D\'EYRANS'
 const LOGO_BASE = 'https://media-logos-clubs.ffhandball.fr/64/'
@@ -153,4 +153,12 @@ export const getMatchHistory = createServerFn().handler(async () => {
     )
     .orderBy(asc(ffhbMatch.date))
   return rows
+})
+
+export const getPartenaires = createServerFn().handler(async () => {
+  return db
+    .select()
+    .from(partenaire)
+    .where(eq(partenaire.active, true))
+    .orderBy(asc(partenaire.sortOrder), asc(partenaire.name))
 })
