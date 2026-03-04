@@ -150,13 +150,22 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
   const categoryLabel = teamNum ? `${category}${teamNum}` : category
 
   const resultStyle = {
-    win: { badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', score: 'text-emerald-600' },
-    loss: { badge: 'bg-gray-50 text-gray-500 border-gray-200', score: 'text-gray-400' },
-    draw: { badge: 'bg-amber-50 text-amber-700 border-amber-200', score: 'text-amber-600' },
+    win:  { badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', score: 'text-emerald-600', gradient: 'from-white to-emerald-50' },
+    loss: { badge: 'bg-gray-50 text-gray-500 border-gray-200',          score: 'text-gray-400',    gradient: 'from-white to-gray-100' },
+    draw: { badge: 'bg-amber-50 text-amber-700 border-amber-200',       score: 'text-amber-600',   gradient: 'from-white to-amber-50' },
   }
+  const gradient = result ? resultStyle[result].gradient : 'from-white to-gray-100'
+
+  // Convention : équipe qui reçoit toujours à gauche
+  const left  = home
+    ? { logo: clubLogo,  label: 'HBSME',              score: clubScore, bold: true  }
+    : { logo: oppLogo,   label: teamLabel(oppTeam),    score: oppScore,  bold: false }
+  const right = home
+    ? { logo: oppLogo,   label: teamLabel(oppTeam),    score: oppScore,  bold: false }
+    : { logo: clubLogo,  label: 'HBSME',              score: clubScore, bold: true  }
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow border border-gray-100 shadow-sm">
+    <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow border border-gray-100 shadow-sm`}>
       {/* Header: catégorie + compétition + résultat */}
       <div className="flex items-center gap-2">
         {categoryLabel && (
@@ -172,20 +181,22 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
         )}
       </div>
 
-      {/* Corps: logos + noms + score */}
+      {/* Corps: logos + noms + score — équipe qui reçoit toujours à gauche */}
       <div className="flex items-center gap-3">
-        <TeamLogo url={clubLogo} alt="HBSME" size="lg" />
+        {/* Équipe gauche (reçoit) */}
+        <TeamLogo url={left.logo} alt={left.label} size="lg" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-900 truncate">HBSME</p>
+          <p className={`text-sm truncate ${left.bold ? 'font-bold text-gray-900' : 'font-semibold text-gray-600'}`}>{left.label}</p>
           <p className="text-xs text-gray-400">{home ? 'Domicile' : 'Extérieur'}</p>
         </div>
 
-        {variant === 'result' && clubScore != null && oppScore != null ? (
+        {/* Score */}
+        {variant === 'result' && left.score != null && right.score != null ? (
           <div className="text-center shrink-0 px-2">
             <span className="text-2xl font-black tabular-nums">
-              <span className={result ? resultStyle[result].score : 'text-gray-900'}>{clubScore}</span>
+              <span className={!home && result ? resultStyle[result].score : 'text-gray-500'}>{left.score}</span>
               <span className="text-gray-300 mx-1.5">–</span>
-              <span className="text-gray-400">{oppScore}</span>
+              <span className={home && result ? resultStyle[result].score : 'text-gray-500'}>{right.score}</span>
             </span>
           </div>
         ) : (
@@ -196,10 +207,11 @@ function MatchCard({ match, variant }: { match: MatchRow; variant: 'upcoming' | 
           </div>
         )}
 
+        {/* Équipe droite (se déplace) */}
         <div className="flex-1 min-w-0 text-right">
-          <p className="text-sm font-semibold text-gray-600 truncate">{teamLabel(oppTeam)}</p>
+          <p className={`text-sm truncate ${right.bold ? 'font-bold text-gray-900' : 'font-semibold text-gray-600'}`}>{right.label}</p>
         </div>
-        <TeamLogo url={oppLogo} alt={teamLabel(oppTeam)} size="lg" />
+        <TeamLogo url={right.logo} alt={right.label} size="lg" />
       </div>
 
       {variant === 'result' && match.date && (
