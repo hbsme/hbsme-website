@@ -413,21 +413,6 @@ function Home() {
           </div>
         </section>
 
-        {/* Anniversaires */}
-        <section id="anniversaires">
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-black text-gray-900">Anniversaires</h2>
-            <span className="text-xs text-gray-400">7 prochains jours</span>
-          </div>
-          {birthdays.length === 0 ? (
-            <p className="text-gray-400">Aucun anniversaire dans les 14 prochains jours.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {birthdays.map((p, i) => <BirthdayCard key={i} person={p} />)}
-            </div>
-          )}
-        </section>
-
       </main>
 
       <footer className="border-t border-gray-100 bg-white py-10 text-center text-gray-300 text-sm">
