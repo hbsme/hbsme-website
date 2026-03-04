@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, desc, gt, isNotNull, isNull } from 'drizzle-orm'
+import { and, asc, desc, gt, isNotNull, isNull, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { ffhbMatch, ffhbTeam } from '../db/schema'
+import { ffhbMatch, ffhbTeam, licencee } from '../db/schema'
 
 const CLUB = 'HANDBALL SAINT MEDARD D\'EYRANS'
 const LOGO_BASE = 'https://media.ffhandball.fr/logos/'
@@ -66,5 +66,50 @@ export const getStandings = createServerFn().handler(async () => {
     .from(ffhbTeam)
     .where(isNotNull(ffhbTeam.score_place))
     .orderBy(asc(ffhbTeam.competition), asc(ffhbTeam.score_place))
+  return rows
+})
+
+export const getUpcomingBirthdays = createServerFn().handler(async () => {
+  // Anniversaires dans les 14 prochains jours (compare mois+jour, peu importe l'année)
+  const rows = await db
+    .select({
+      firstname: licencee.firstname,
+      lastname: licencee.lastname,
+      birthdate: licencee.birthdate,
+    })
+    .from(licencee)
+    .where(
+      sql`
+        MAKE_DATE(
+          EXTRACT(YEAR FROM NOW())::int,
+          EXTRACT(MONTH FROM ${licencee.birthdate})::int,
+          EXTRACT(DAY FROM ${licencee.birthdate})::int
+        ) BETWEEN NOW()::date AND (NOW() + interval '14 days')::date
+      `,
+    )
+    .orderBy(
+      sql`MAKE_DATE(
+        EXTRACT(YEAR FROM NOW())::int,
+        EXTRACT(MONTH FROM ${licencee.birthdate})::int,
+        EXTRACT(DAY FROM ${licencee.birthdate})::int
+      )`,
+    )
+  return rows
+})
+
+export const getWeekendNews = createServerFn().handler(async () => {
+  // Récupère les résultats du week-end précédent pour générer l'actu
+  const lastMonday = sql`(NOW() - (EXTRACT(DOW FROM NOW())::int + 6) * interval '1 day')::date`
+  const rows = await db
+    .select()
+    .from(ffhbMatch)
+    .where(
+      and(
+        isNotNull(ffhbMatch.score1),
+        sql`${ffhbMatch.date} >= ${lastMonday}`,
+        sql`${ffhbMatch.date} < NOW()`,
+      ),
+    )
+    .orderBy(asc(ffhbMatch.date))
   return rows
 })

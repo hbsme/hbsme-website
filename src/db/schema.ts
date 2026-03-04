@@ -1,5 +1,18 @@
 import { pgTable, serial, varchar, integer, timestamp, date } from 'drizzle-orm/pg-core'
 
+export const licencee = pgTable('licencee', {
+  id: serial('id').primaryKey(),
+  licenceeId: varchar('licenceeId', { length: 64 }).notNull().unique(),
+  licenceeNumber: varchar('licenceeNumber', { length: 64 }).notNull().unique(),
+  seazon: varchar('seazon', { length: 16 }).notNull(),
+  birthname: varchar('birthname', { length: 255 }).notNull(),
+  lastname: varchar('lastname', { length: 255 }).notNull(),
+  firstname: varchar('firstname', { length: 255 }).notNull(),
+  birthdate: date('birthdate').notNull(),
+  status: varchar('status', { length: 32 }).notNull(),
+  type: varchar('type', { length: 8 }).notNull(),
+})
+
 export const ffhbMatch = pgTable('ffhb_match', {
   id: serial('id').primaryKey(),
   matchId: integer('matchId').notNull().unique(),
