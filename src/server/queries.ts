@@ -115,3 +115,27 @@ export const getWeekendNews = createServerFn().handler(async () => {
     .orderBy(asc(ffhbMatch.date))
   return rows
 })
+
+export const getMatchHistory = createServerFn().handler(async () => {
+  // Récupère les 8 dernières semaines de résultats (pour contexte IA)
+  const rows = await db
+    .select({
+      matchId: ffhbMatch.matchId,
+      date: ffhbMatch.date,
+      competition: ffhbMatch.competition,
+      team1: ffhbMatch.team1,
+      team2: ffhbMatch.team2,
+      score1: ffhbMatch.score1,
+      score2: ffhbMatch.score2,
+    })
+    .from(ffhbMatch)
+    .where(
+      and(
+        isNotNull(ffhbMatch.score1),
+        sql`${ffhbMatch.date} >= (NOW() - interval '8 weeks')::date`,
+        sql`${ffhbMatch.date} < NOW()`,
+      ),
+    )
+    .orderBy(asc(ffhbMatch.date))
+  return rows
+})

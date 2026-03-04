@@ -1,4 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -6,6 +7,7 @@ import { tmpdir } from 'node:os'
 // ─── types ───────────────────────────────────────────────────────────────────
 
 type Match = {
+  matchId?: number | null
   date: Date | string | null
   team1: string | null
   team2: string | null
@@ -15,24 +17,27 @@ type Match = {
 }
 
 type CacheEntry = {
-  week: string
+  hash: string
   text: string
   generatedAt: string
 }
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
-
-function getISOWeek(date: Date): string {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
-  const week1 = new Date(d.getFullYear(), 0, 4)
-  const weekNum = 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
-  return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`
-}
+// ─── cache ───────────────────────────────────────────────────────────────────
 
 const CACHE_FILE = join(tmpdir(), 'hbsme_weekend_summary.json')
-const CLUB = "HANDBALL SAINT MEDARD D'EYRANS"
+
+/**
+ * Hash stable de l'ensemble des matchs passés en paramètre.
+ * Clé = sha256(sorted matchIds + scores) → invalide si les données changent.
+ */
+function computeHash(currentWeek: Match[], history: Match[]): string {
+  const all = [...currentWeek, ...history]
+  const stable = all
+    .map(m => `${m.matchId ?? ''}:${m.score1 ?? ''}:${m.score2 ?? ''}`)
+    .sort()
+    .join('|')
+  return createHash('sha256').update(stable).digest('hex').slice(0, 16)
+}
 
 function readCache(): CacheEntry | null {
   try {
@@ -47,15 +52,23 @@ function writeCache(entry: CacheEntry): void {
   try {
     writeFileSync(CACHE_FILE, JSON.stringify(entry), 'utf-8')
   } catch {
-    // cache write failure is non-critical
+    // non-critique
   }
 }
 
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+const CLUB = "HANDBALL SAINT MEDARD D'EYRANS"
+
 function isHome(team1: string | null): boolean {
-  return team1 === CLUB
+  return !!team1?.startsWith(CLUB.substring(0, 15))
 }
 
-function matchResult(score1: string | number | null, score2: string | number | null, team1: string | null): 'win' | 'loss' | 'draw' | null {
+function matchResult(
+  score1: string | number | null,
+  score2: string | number | null,
+  team1: string | null,
+): 'win' | 'loss' | 'draw' | null {
   if (score1 == null || score2 == null) return null
   const home = isHome(team1)
   const clubScore = Number(home ? score1 : score2)
@@ -65,76 +78,147 @@ function matchResult(score1: string | number | null, score2: string | number | n
   return 'draw'
 }
 
-function buildPrompt(matches: Match[]): string {
-  if (matches.length === 0) {
-    return ''
+function formatMatch(m: Match): string {
+  const home = isHome(m.team1)
+  const clubScore = Number(home ? m.score1 : m.score2)
+  const oppScore = Number(home ? m.score2 : m.score1)
+  const opponent = (home ? m.team2 : m.team1) ?? 'Adversaire'
+  const domExt = home ? 'dom.' : 'ext.'
+  const competition = m.competition ?? 'Championnat'
+  const result = matchResult(m.score1, m.score2, m.team1)
+  const resultFr = result === 'win' ? 'victoire' : result === 'loss' ? 'défaite' : 'nul'
+  return `  • ${competition} (${domExt}) : ${clubScore}–${oppScore} face à ${opponent} → ${resultFr}`
+}
+
+function formatDate(raw: Date | string | null): string {
+  if (!raw) return '?'
+  const d = new Date(raw)
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+}
+
+/**
+ * Groupe les matchs par week-end (lundi de la semaine ISO).
+ * Retourne un tableau de { label, matches }, du plus ancien au plus récent.
+ */
+function groupByWeekend(matches: Match[]): Array<{ label: string; matches: Match[] }> {
+  const groups: Map<string, Match[]> = new Map()
+  for (const m of matches) {
+    if (!m.date) continue
+    const d = new Date(m.date)
+    // Lundi de la semaine = clé de groupe
+    const day = d.getDay()
+    const monday = new Date(d)
+    monday.setDate(d.getDate() - ((day + 6) % 7))
+    const key = monday.toISOString().slice(0, 10)
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(m)
   }
+  return Array.from(groups.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, ms]) => ({
+      label: `Week-end du ${formatDate(key)}`,
+      matches: ms,
+    }))
+}
 
-  const lines = matches.map((m) => {
-    const home = isHome(m.team1)
-    const clubScore = Number(home ? m.score1 : m.score2)
-    const oppScore = Number(home ? m.score2 : m.score1)
-    const opponent = home ? m.team2 : m.team1
-    const domExt = home ? 'domicile' : 'extérieur'
-    const competition = m.competition ?? 'Championnat'
-    const result = matchResult(m.score1, m.score2, m.team1)
-    const resultFr = result === 'win' ? 'victoire' : result === 'loss' ? 'défaite' : 'match nul'
-    return `- ${competition} (${domExt}) : HBSME ${clubScore} – ${oppScore} ${opponent ?? 'Adversaire'} → ${resultFr}`
-  })
+// ─── prompt ──────────────────────────────────────────────────────────────────
 
-  return `Tu es le rédacteur du site web du Handball Saint-Médard d'Eyrans (HBSME), un club de handball en Gironde.
+function buildPrompt(currentWeek: Match[], history: Match[]): string {
+  const historyGroups = groupByWeekend(history)
+  const currentGroups = groupByWeekend(currentWeek)
 
-Voici les résultats du week-end de nos équipes :
-${lines.join('\n')}
+  const historySection =
+    historyGroups.length > 0
+      ? `## Résultats des semaines précédentes\n\n` +
+        historyGroups
+          .map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`)
+          .join('\n\n')
+      : ''
 
-Écris un court résumé d'actu (3-4 phrases maximum), ton dynamique et bienveillant, en français. Style : communiqué de club, chaleureux, encourageant. Pas de liste, pas de markdown — texte narratif simple. Termine par "Allez Saint-Médard ! 🤾"`
+  const currentSection =
+    currentGroups.length > 0
+      ? `## Résultats de ce week-end\n\n` +
+        currentGroups
+          .map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`)
+          .join('\n\n')
+      : '## Ce week-end\n\nAucun résultat disponible.'
+
+  return `Tu rédiges l'actu sportive du site web du Handball Saint-Médard d'Eyrans (HBSME), un club familial de Gironde.
+
+**Consignes de ton :**
+- Enthousiaste mais mesuré — évite les superlatifs excessifs ("brillant", "écrasé", "surclassé")
+- En cas de défaite : encourageant, bienveillant, jamais défaitiste
+- Valorise l'engagement des joueurs et l'esprit collectif, pas seulement les scores
+- Si tu observes une progression ou une série sur plusieurs semaines, mentionne-la avec modestie (ex : "les U13 semblent trouver leur rythme" plutôt que "domination totale")
+- Tu peux noter une tendance chiffrée si elle est flatteuse, sinon reste vague
+- **Jamais de formule comme "HBSME a écrasé", "défaite sévère", "belle correction"**
+- Langue : français, style fluide et chaleureux, pas de liste, pas de bullet points
+- Longueur : 3 à 5 phrases maximum
+- Termine obligatoirement par : "Allez Saint-Médard ! 🤾"
+
+---
+
+${historySection}
+
+${currentSection}
+
+---
+
+Rédige maintenant le résumé d'actu du week-end dernier, en tenant compte du contexte des semaines précédentes si pertinent.`
+}
+
+// ─── fallback ────────────────────────────────────────────────────────────────
+
+function fallbackText(matches: Match[]): string {
+  if (matches.length === 0) {
+    return 'Pas de matchs disputés ce week-end. Rendez-vous la semaine prochaine pour suivre nos équipes ! 🤾'
+  }
+  const wins = matches.filter(m => matchResult(m.score1, m.score2, m.team1) === 'win').length
+  const total = matches.length
+  return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} ${total > 1 ? 'étaient' : 'était'} au programme pour nos équipes. ${wins > 0 ? `Avec ${wins} victoire${wins > 1 ? 's' : ''} au compteur, le bilan est encourageant.` : 'Malgré des résultats difficiles, nos joueurs ont montré de la combativité.'} Retrouvez le détail dans la section Résultats. Allez Saint-Médard ! 🤾`
 }
 
 // ─── main export ─────────────────────────────────────────────────────────────
 
-export async function generateWeekendSummary(matches: Match[]): Promise<string> {
-  if (matches.length === 0) {
-    return "Pas de matchs disputés ce week-end. Rendez-vous la semaine prochaine pour suivre nos équipes ! 🤾"
+/**
+ * @param currentWeek  matchs du week-end en cours (pour l'actu principale)
+ * @param history      matchs des semaines précédentes (pour le contexte IA)
+ */
+export async function generateWeekendSummary(
+  currentWeek: Match[],
+  history: Match[],
+): Promise<string> {
+  if (currentWeek.length === 0) {
+    return fallbackText([])
   }
 
-  const currentWeek = getISOWeek(new Date())
-
-  // Check cache
+  // Cache par hash de toutes les données
+  const hash = computeHash(currentWeek, history)
   const cached = readCache()
-  if (cached?.week === currentWeek) {
+  if (cached?.hash === hash) {
     return cached.text
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = process.env.GOOGLE_API_KEY
   if (!apiKey) {
-    // Fallback si pas de clé configurée
-    const wins = matches.filter(m => matchResult(m.score1, m.score2, m.team1) === 'win').length
-    const total = matches.length
-    return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} étai${total > 1 ? 'ent' : 't'} au programme pour nos équipes. ${wins > 0 ? `Avec ${wins} victoire${wins > 1 ? 's' : ''} au compteur, le bilan est encourageant.` : 'Malgré des résultats difficiles, nos joueurs ont montré de la combativité.'} Retrouvez le détail des scores dans la section Résultats ci-dessous. Allez Saint-Médard ! 🤾`
+    return fallbackText(currentWeek)
   }
 
   try {
-    const client = new Anthropic({ apiKey })
-    const prompt = buildPrompt(matches)
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
+    const prompt = buildPrompt(currentWeek, history)
 
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 300,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const result = await model.generateContent(prompt)
+    const text = result.response.text().trim()
 
     if (text) {
-      writeCache({ week: currentWeek, text, generatedAt: new Date().toISOString() })
+      writeCache({ hash, text, generatedAt: new Date().toISOString() })
       return text
     }
   } catch (err) {
     console.error('[HBSME] AI summary error:', err)
   }
 
-  // Fallback en cas d'erreur
-  const wins = matches.filter(m => matchResult(m.score1, m.score2, m.team1) === 'win').length
-  const total = matches.length
-  return `Ce week-end, ${total} rencontre${total > 1 ? 's' : ''} était${total > 1 ? 'ent' : ''} au programme. ${wins > 0 ? `${wins} victoire${wins > 1 ? 's' : ''} à célébrer !` : 'Nos équipes ont montré de la combativité.'} Rendez-vous la semaine prochaine. Allez Saint-Médard ! 🤾`
+  return fallbackText(currentWeek)
 }
