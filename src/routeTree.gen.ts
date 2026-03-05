@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PartenairesRouteImport } from './routes/partenaires'
 import { Route as ConseilAdministrationRouteImport } from './routes/conseil-administration'
+import { Route as CharteRouteImport } from './routes/charte'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const PartenairesRoute = PartenairesRouteImport.update({
 const ConseilAdministrationRoute = ConseilAdministrationRouteImport.update({
   id: '/conseil-administration',
   path: '/conseil-administration',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CharteRoute = CharteRouteImport.update({
+  id: '/charte',
+  path: '/charte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/charte': typeof CharteRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/partenaires': typeof PartenairesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/charte': typeof CharteRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/partenaires': typeof PartenairesRoute
 }
@@ -51,20 +59,33 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/charte': typeof CharteRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/partenaires': typeof PartenairesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/conseil-administration' | '/partenaires'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/charte'
+    | '/conseil-administration'
+    | '/partenaires'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/conseil-administration' | '/partenaires'
-  id: '__root__' | '/' | '/about' | '/conseil-administration' | '/partenaires'
+  to: '/' | '/about' | '/charte' | '/conseil-administration' | '/partenaires'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/charte'
+    | '/conseil-administration'
+    | '/partenaires'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  CharteRoute: typeof CharteRoute
   ConseilAdministrationRoute: typeof ConseilAdministrationRoute
   PartenairesRoute: typeof PartenairesRoute
 }
@@ -83,6 +104,13 @@ declare module '@tanstack/react-router' {
       path: '/conseil-administration'
       fullPath: '/conseil-administration'
       preLoaderRoute: typeof ConseilAdministrationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/charte': {
+      id: '/charte'
+      path: '/charte'
+      fullPath: '/charte'
+      preLoaderRoute: typeof CharteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -105,6 +133,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  CharteRoute: CharteRoute,
   ConseilAdministrationRoute: ConseilAdministrationRoute,
   PartenairesRoute: PartenairesRoute,
 }
