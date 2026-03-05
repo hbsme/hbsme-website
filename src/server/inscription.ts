@@ -321,10 +321,10 @@ export const submitInscription = createServerFn({ method: 'POST' })
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer bm_22863c222d7c492396c66a4a459a9e0b0b80242d1e71449ca04b1386469b77e6',
+          Authorization: 'Bearer bm_e2fb047f06a84803b32e97ddeb16aeb7b926521ffd04493ab843743d855b3ef6',
         },
         body: JSON.stringify({
-          from: 'basile@chrm.fr',
+          from: 'no-reply@hbsme.fr',
           to: ['contacthbsme@gmail.com'],
           subject: `Nouvelle inscription : ${filename}.pdf`,
           text: `Une nouvelle inscription a été reçue.\n\nFichier : ${filename}.pdf\nLien : ${pdfUrl}`,
