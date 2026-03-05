@@ -182,8 +182,8 @@ function InscriptionPage() {
       const result = await submitInscription({
         data: {
           licencie: { ...licencie, mineur, sexe: licencie.sexe },
-          parent1: parent1 as Parameters<typeof submitInscription>[0]['data']['parent1'],
-          parent2: parent2 as Parameters<typeof submitInscription>[0]['data']['parent2'],
+          parent1,
+          parent2,
           autorisation: { ...autorisation, droitImage },
           signatureDataUrl,
         },

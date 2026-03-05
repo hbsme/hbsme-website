@@ -60,8 +60,10 @@ async function drawTablePage(
   pdfDoc: PDFDocument,
   title: string,
   rows: [string, string][],
-  font: ReturnType<typeof Object>,
-  boldFont: ReturnType<typeof Object>,
+  // biome-ignore lint/suspicious/noExplicitAny: pdf-lib types
+  font: any,
+  // biome-ignore lint/suspicious/noExplicitAny: pdf-lib types
+  boldFont: any,
 ) {
   const page = pdfDoc.addPage([595, 842])
   const { width, height } = page.getSize()
@@ -72,7 +74,7 @@ async function drawTablePage(
     x: MARGIN,
     y,
     size: 16,
-    font: boldFont as Parameters<typeof page.drawText>[1]['font'],
+    font: boldFont,
     color: PINK,
   })
   y -= LINE_HEIGHT * 1.5
@@ -94,7 +96,7 @@ async function drawTablePage(
       x: MARGIN,
       y,
       size: 10,
-      font: boldFont as Parameters<typeof page.drawText>[1]['font'],
+      font: boldFont,
       color: GRAY,
     })
 
@@ -105,7 +107,7 @@ async function drawTablePage(
       x: MARGIN + 180,
       y,
       size: 10,
-      font: font as Parameters<typeof page.drawText>[1]['font'],
+      font: font,
       color: DARK,
     })
 
@@ -118,9 +120,9 @@ async function drawTablePage(
 // ─── Main server function ─────────────────────────────────────────────────────
 
 export const submitInscription = createServerFn({ method: 'POST' })
-  .validator((data: unknown) => data as InscriptionPayload)
-  .handler(async ({ data }) => {
-    const { licencie, parent1, parent2, autorisation, signatureDataUrl } = data
+  .inputValidator((data: unknown) => data as InscriptionPayload)
+  .handler(async (ctx) => {
+    const { licencie, parent1, parent2, autorisation, signatureDataUrl } = ctx.data
 
     // Build filename
     const annee = licencie.dateNaissance.split('/')[2] || new Date().getFullYear().toString()
@@ -297,7 +299,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
 
     // Save JSON
     const jsonPath = path.join(JSON_DIR, `${filename}.json`)
-    fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2))
+    fs.writeFileSync(jsonPath, JSON.stringify(ctx.data, null, 2))
 
     // ── Telegram notification ──────────────────────────────────────────────────
     const BOT_TOKEN = '991040556:AAHWfiY-uSdYSeRSkij3dBaBRnpdu5rtyFo'
@@ -325,7 +327,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
         },
         body: JSON.stringify({
           from: 'no-reply@hbsme.fr',
-          to: ['contacthbsme@gmail.com'],
+          to: ['christophe.maillot@gmail.com'],
           subject: `Nouvelle inscription : ${filename}.pdf`,
           text: `Une nouvelle inscription a été reçue.\n\nFichier : ${filename}.pdf\nLien : ${pdfUrl}`,
           html: `<p>Une nouvelle inscription a été reçue.</p><p>Fichier : <strong>${filename}.pdf</strong></p><p><a href="${pdfUrl}">Télécharger le PDF</a></p>`,
