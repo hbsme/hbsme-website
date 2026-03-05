@@ -613,6 +613,7 @@ function Home() {
             <a href="#classements" className="hover:text-pink-800 transition-colors">Classements</a>
             <a href="#anniversaires" className="hover:text-pink-800 transition-colors">Anniversaires</a>
             <Link to="/partenaires" className="hover:text-pink-800 transition-colors font-semibold">Partenaires</Link>
+            <Link to="/conseil-administration" className="hover:text-pink-800 transition-colors font-semibold">Le Club</Link>
           </nav>
         </div>
       </header>

@@ -55,3 +55,13 @@ export const ffhbTeam = pgTable('ffhb_team', {
   score_nul: integer('score_nul'),
   score_perdu: integer('score_perdu'),
 })
+
+export const membreCa = pgTable('membre_ca', {
+  id: serial('id').primaryKey(),
+  nom: text('nom').notNull(),
+  poste: text('poste').notNull(),
+  photo: text('photo'),
+  isTop: boolean('is_top').default(false),
+  sortOrder: integer('sort_order').default(0),
+  active: boolean('active').default(true),
+})
