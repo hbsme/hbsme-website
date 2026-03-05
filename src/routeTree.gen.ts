@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PartenairesRouteImport } from './routes/partenaires'
+import { Route as EntrainementsRouteImport } from './routes/entrainements'
 import { Route as ConseilAdministrationRouteImport } from './routes/conseil-administration'
 import { Route as CharteRouteImport } from './routes/charte'
 import { Route as AboutRouteImport } from './routes/about'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const PartenairesRoute = PartenairesRouteImport.update({
   id: '/partenaires',
   path: '/partenaires',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntrainementsRoute = EntrainementsRouteImport.update({
+  id: '/entrainements',
+  path: '/entrainements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConseilAdministrationRoute = ConseilAdministrationRouteImport.update({
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/charte': typeof CharteRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
+  '/entrainements': typeof EntrainementsRoute
   '/partenaires': typeof PartenairesRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/charte': typeof CharteRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
+  '/entrainements': typeof EntrainementsRoute
   '/partenaires': typeof PartenairesRoute
 }
 export interface FileRoutesById {
@@ -61,6 +69,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/charte': typeof CharteRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
+  '/entrainements': typeof EntrainementsRoute
   '/partenaires': typeof PartenairesRoute
 }
 export interface FileRouteTypes {
@@ -70,15 +79,23 @@ export interface FileRouteTypes {
     | '/about'
     | '/charte'
     | '/conseil-administration'
+    | '/entrainements'
     | '/partenaires'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/charte' | '/conseil-administration' | '/partenaires'
+  to:
+    | '/'
+    | '/about'
+    | '/charte'
+    | '/conseil-administration'
+    | '/entrainements'
+    | '/partenaires'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/charte'
     | '/conseil-administration'
+    | '/entrainements'
     | '/partenaires'
   fileRoutesById: FileRoutesById
 }
@@ -87,6 +104,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   CharteRoute: typeof CharteRoute
   ConseilAdministrationRoute: typeof ConseilAdministrationRoute
+  EntrainementsRoute: typeof EntrainementsRoute
   PartenairesRoute: typeof PartenairesRoute
 }
 
@@ -97,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/partenaires'
       fullPath: '/partenaires'
       preLoaderRoute: typeof PartenairesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entrainements': {
+      id: '/entrainements'
+      path: '/entrainements'
+      fullPath: '/entrainements'
+      preLoaderRoute: typeof EntrainementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conseil-administration': {
@@ -135,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   CharteRoute: CharteRoute,
   ConseilAdministrationRoute: ConseilAdministrationRoute,
+  EntrainementsRoute: EntrainementsRoute,
   PartenairesRoute: PartenairesRoute,
 }
 export const routeTree = rootRouteImport
