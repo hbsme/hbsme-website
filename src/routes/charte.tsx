@@ -52,6 +52,7 @@ function ChartePage() {
             <Link to="/" className="hover:text-pink-800 transition-colors">Accueil</Link>
             <Link to="/partenaires" className="hover:text-pink-800 transition-colors">Partenaires</Link>
             <Link to="/conseil-administration" className="hover:text-pink-800 transition-colors">Le Club</Link>
+            <Link to="/inscription" className="bg-pink-700 text-white px-3 py-1.5 rounded-lg hover:bg-pink-800 transition-colors font-semibold text-sm">Inscription</Link>
           </nav>
         </div>
       </header>
