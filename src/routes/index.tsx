@@ -632,7 +632,7 @@ function Home() {
               joueur de longue date, de créer une association de handball avec quelques amis.
               C'est ainsi que naît le club.
             </p>
-            <p className="text-gray-400 text-base max-w-lg leading-relaxed">
+            <p className="text-gray-500 text-base max-w-lg leading-relaxed italic">
               Depuis 2014, le club a grandi grâce à l'implication de tous — bénévoles, parents,
               licenciés, dirigeants, partenaires, entraîneurs. Un club axé sur la formation
               du joueur, avec la convivialité comme identité.
