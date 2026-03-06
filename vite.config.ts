@@ -7,15 +7,21 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const isProd = process.env.NODE_ENV === 'production'
+
 const config = defineConfig({
   server: {
-    allowedHosts: ['dev.hbsme.fr'],
+    allowedHosts: ['dev.hbsme.fr', 'handball-saint-medard-deyrans.fr'],
   },
   plugins: [
-    devtools(),
+    ...(isProd ? [] : [devtools()]),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      server: {
+        preset: 'node-server',
+      },
+    }),
     viteReact(),
   ],
 })
