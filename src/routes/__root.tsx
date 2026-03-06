@@ -17,7 +17,7 @@ export const Route = createRootRoute({
       { property: 'og:site_name', content: 'HBSME' },
       { property: 'og:type', content: 'website' },
       { property: 'og:locale', content: 'fr_FR' },
-      { property: 'og:image', content: `https://hbsme.fr/logo-hbsme.png` },
+      { property: 'og:image', content: `https://handball-saint-medard-deyrans.fr/logo-hbsme.png` },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
@@ -32,9 +32,9 @@ export const Route = createRootRoute({
           name: 'Handball Saint-Médard d\'Eyrans (HBSME)',
           alternateName: 'HBSME',
           sport: 'Handball',
-          url: 'https://hbsme.fr',
-          logo: 'https://hbsme.fr/logo-hbsme.png',
-          image: 'https://hbsme.fr/logo-hbsme.png',
+          url: 'https://handball-saint-medard-deyrans.fr',
+          logo: 'https://handball-saint-medard-deyrans.fr/logo-hbsme.png',
+          image: 'https://handball-saint-medard-deyrans.fr/logo-hbsme.png',
           address: {
             '@type': 'PostalAddress',
             streetAddress: 'Salle Jean-Marie Lesca',

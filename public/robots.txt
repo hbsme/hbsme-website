@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://hbsme.fr/sitemap.xml
+Sitemap: https://handball-saint-medard-deyrans.fr/sitemap.xml
