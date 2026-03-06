@@ -494,11 +494,6 @@ function InscriptionPage() {
           </div>
         </form>
       </main>
-
-      <footer className="border-t border-gray-100 py-6 text-center text-xs text-gray-400">
-        <p className="font-bold text-gray-400 mb-1">Handball Saint-Médard d'Eyrans</p>
-        <p>© {new Date().getFullYear()} HBSME — Tous droits réservés</p>
-      </footer>
     </div>
   )
 }

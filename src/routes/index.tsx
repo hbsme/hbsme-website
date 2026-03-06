@@ -816,11 +816,6 @@ function Home() {
         </section>
       )}
 
-      <footer className="border-t border-gray-100 bg-white py-10 text-center text-gray-300 text-sm">
-        <p className="font-bold text-gray-400 mb-1">Handball Saint-Médard d'Eyrans</p>
-        <p>© {new Date().getFullYear()} · Données FFHB &amp; Gesthand</p>
-      </footer>
-
     </div>
   )
 }

@@ -100,11 +100,6 @@ function CollectifsPage() {
           ))}
         </div>
       </main>
-
-      <footer className="mt-16 py-8 border-t border-gray-200 text-center">
-        <p className="font-bold text-gray-400 mb-1">Handball Saint-Médard d'Eyrans</p>
-        <p className="text-sm text-gray-400">© {new Date().getFullYear()} HBSME — Tous droits réservés</p>
-      </footer>
     </div>
   )
 }
