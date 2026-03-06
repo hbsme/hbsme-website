@@ -589,28 +589,6 @@ function Home() {
     <div className="min-h-screen bg-gray-50 text-gray-900">
 
       {/* Header */}
-      <header className="border-b border-gray-200 sticky top-0 z-10 backdrop-blur bg-gradient-to-b from-white/95 to-white/80">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={CLUB_LOGO} alt="Logo HBSME" className="w-9 h-9 object-contain" />
-            <div>
-              <p className="font-black text-gray-900 leading-tight">HBSME</p>
-              <p className="text-xs text-gray-400">Saint-Médard d'Eyrans</p>
-            </div>
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-gray-500">
-            <a href="#weekend" className="hover:text-pink-800 transition-colors">Actu</a>
-            <a href="#resultats" className="hover:text-pink-800 transition-colors">Résultats</a>
-            <a href="#matchs" className="hover:text-pink-800 transition-colors">Matchs</a>
-            <a href="#classements" className="hover:text-pink-800 transition-colors">Classements</a>
-            <a href="#anniversaires" className="hover:text-pink-800 transition-colors">Anniversaires</a>
-            <Link to="/partenaires" className="hover:text-pink-800 transition-colors font-semibold">Partenaires</Link>
-            <Link to="/conseil-administration" className="hover:text-pink-800 transition-colors font-semibold">Le Club</Link>
-            <Link to="/collectifs" className="hover:text-pink-800 transition-colors font-semibold">Collectifs</Link>
-            <Link to="/inscription" className="bg-pink-700 text-white px-3 py-1.5 rounded-lg hover:bg-pink-800 transition-colors font-semibold text-sm">Inscription</Link>
-          </nav>
-        </div>
-      </header>
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-white via-white to-pink-50 border-b border-pink-100 pb-10">
