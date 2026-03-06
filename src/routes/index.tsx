@@ -648,7 +648,7 @@ function Home() {
 
         {/* Actu du week-end + card anniversaire côte à côte */}
         <section id="weekend" className="pb-20 border-b border-gray-200">
-          <div className="flex gap-16 items-start">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start">
 
             {/* Actu — prend tout l'espace disponible */}
             <div className="flex-1 min-w-0">
@@ -669,7 +669,7 @@ function Home() {
             </div>
 
             {/* Card anniversaire — taille fixe, punaisée */}
-            <div className="relative w-52 shrink-0 hidden md:block mt-10" id="anniversaires">
+            <div className="relative w-full md:w-52 md:shrink-0 md:mt-10" id="anniversaires">
               {/* Pin */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 drop-shadow-md">
                 <div className="w-6 h-6 rounded-full bg-pink-700 border-2 border-pink-800 shadow-lg flex items-center justify-center">
@@ -677,7 +677,7 @@ function Home() {
                 </div>
               </div>
               {/* Carte — rotation autour du pin (origin-top) */}
-              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden rotate-1 hover:rotate-0 origin-top transition-transform duration-300">
+              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden md:rotate-1 md:hover:rotate-0 md:origin-top md:transition-transform md:duration-300">
                 <div className="bg-gradient-to-b from-pink-600 to-pink-800 px-3 py-2 text-center">
                   <p className="text-white text-xs font-black tracking-widest uppercase">🎂 Anniversaires</p>
                 </div>
