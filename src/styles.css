@@ -259,3 +259,15 @@ a {
     transform: translateY(0);
   }
 }
+
+/* Gallery scroll strip */
+@keyframes gallery-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [style*="gallery-scroll"] {
+    animation: none !important;
+  }
+}

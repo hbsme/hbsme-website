@@ -694,6 +694,74 @@ function Home() {
 
       </main>
 
+      {/* Galerie photo — strip défilant */}
+      <section className="py-12 overflow-hidden bg-gray-50 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">Vie du club</h2>
+            <p className="text-sm text-gray-500 mt-1">Moments partagés sur et hors du terrain</p>
+          </div>
+          <a
+            href="https://handball-saint-medard-deyrans.fr/galerie/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-pink-600 hover:text-pink-700 font-medium transition-colors"
+          >
+            Voir toute la galerie →
+          </a>
+        </div>
+        <div className="relative">
+          <div
+            className="flex gap-4 px-4"
+            style={{
+              animation: 'gallery-scroll 60s linear infinite',
+              width: 'max-content',
+            }}
+          >
+          <img key="0" src="/gallery/full/20240518_183456.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="1" src="/gallery/full/20240518_190244.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="2" src="/gallery/full/20240518_190303.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="3" src="/gallery/full/2024-05-29_16.52.12_2d7a61a4.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="4" src="/gallery/full/2024-05-29_16.56.10_a3047d04.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="5" src="/gallery/full/20231014_120234.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="6" src="/gallery/full/20231009_211324.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="7" src="/gallery/full/2023-06-24_15.25.39_23ced0db.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="8" src="/gallery/full/20221126_130620.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="9" src="/gallery/full/20221125_225023.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="10" src="/gallery/full/20221120_102216.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="11" src="/gallery/full/20211016_154156.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="12" src="/gallery/full/20210925_212853.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="13" src="/gallery/full/DSC5445.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="14" src="/gallery/full/DSC8391.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="15" src="/gallery/full/DSC9652.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="16" src="/gallery/full/DSC3039.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="17" src="/gallery/full/DSC4374.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="18" src="/gallery/full/IMG_6426.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="19" src="/gallery/full/IMG_6076.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="20" src="/gallery/full/20240518_183456.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="21" src="/gallery/full/20240518_190244.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="22" src="/gallery/full/20240518_190303.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="23" src="/gallery/full/2024-05-29_16.52.12_2d7a61a4.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="24" src="/gallery/full/2024-05-29_16.56.10_a3047d04.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="25" src="/gallery/full/20231014_120234.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="26" src="/gallery/full/20231009_211324.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="27" src="/gallery/full/2023-06-24_15.25.39_23ced0db.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="28" src="/gallery/full/20221126_130620.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="29" src="/gallery/full/20221125_225023.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="30" src="/gallery/full/20221120_102216.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="31" src="/gallery/full/20211016_154156.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="32" src="/gallery/full/20210925_212853.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="33" src="/gallery/full/DSC5445.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="34" src="/gallery/full/DSC8391.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="35" src="/gallery/full/DSC9652.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="36" src="/gallery/full/DSC3039.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="37" src="/gallery/full/DSC4374.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="38" src="/gallery/full/IMG_6426.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="39" src="/gallery/full/IMG_6076.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          </div>
+        </div>
+      </section>
+
       {/* Partenaires */}
       {partenaires.length > 0 && (
         <section className="border-t border-gray-100 bg-white py-12 px-4">
