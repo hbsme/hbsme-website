@@ -714,54 +714,73 @@ function Home() {
           <div
             className="flex gap-4 px-4"
             style={{
-              animation: 'gallery-scroll 60s linear infinite',
+              animation: 'gallery-scroll 90s linear infinite',
               width: 'max-content',
             }}
           >
-          <img key="0" src="/gallery/full/20240518_183456.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="1" src="/gallery/full/20240518_190244.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="2" src="/gallery/full/20240518_190303.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="3" src="/gallery/full/2024-05-29_16.52.12_2d7a61a4.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="4" src="/gallery/full/2024-05-29_16.56.10_a3047d04.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="5" src="/gallery/full/20231014_120234.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="6" src="/gallery/full/20231009_211324.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="7" src="/gallery/full/2023-06-24_15.25.39_23ced0db.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="8" src="/gallery/full/20221126_130620.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="9" src="/gallery/full/20221125_225023.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="10" src="/gallery/full/20221120_102216.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="11" src="/gallery/full/20211016_154156.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="12" src="/gallery/full/20210925_212853.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="13" src="/gallery/full/DSC5445.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="14" src="/gallery/full/DSC8391.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="15" src="/gallery/full/DSC9652.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="16" src="/gallery/full/DSC3039.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="17" src="/gallery/full/DSC4374.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="18" src="/gallery/full/IMG_6426.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="19" src="/gallery/full/IMG_6076.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="20" src="/gallery/full/20240518_183456.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="21" src="/gallery/full/20240518_190244.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="22" src="/gallery/full/20240518_190303.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="23" src="/gallery/full/2024-05-29_16.52.12_2d7a61a4.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="24" src="/gallery/full/2024-05-29_16.56.10_a3047d04.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="25" src="/gallery/full/20231014_120234.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="26" src="/gallery/full/20231009_211324.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="27" src="/gallery/full/2023-06-24_15.25.39_23ced0db.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="28" src="/gallery/full/20221126_130620.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="29" src="/gallery/full/20221125_225023.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="30" src="/gallery/full/20221120_102216.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="31" src="/gallery/full/20211016_154156.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="32" src="/gallery/full/20210925_212853.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="33" src="/gallery/full/DSC5445.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="34" src="/gallery/full/DSC8391.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="35" src="/gallery/full/DSC9652.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="36" src="/gallery/full/DSC3039.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="37" src="/gallery/full/DSC4374.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="38" src="/gallery/full/IMG_6426.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
-          <img key="39" src="/gallery/full/IMG_6076.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="0" src="/gallery/thumb/IMG_6387.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="1" src="/gallery/thumb/DSC8261.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="2" src="/gallery/thumb/20240518_190303.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="3" src="/gallery/thumb/DSC8435.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="4" src="/gallery/thumb/2024-05-29_16.52.12_2d7a61a4.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="5" src="/gallery/thumb/20231014_120234.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="6" src="/gallery/thumb/DSC8273.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="7" src="/gallery/thumb/IMG-20211112-WA0006.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="8" src="/gallery/thumb/DSC8296.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="9" src="/gallery/thumb/IMG_9086.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="10" src="/gallery/thumb/IMG-20220602-WA0003.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="11" src="/gallery/thumb/DSC8271.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="12" src="/gallery/thumb/IMG_3803.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="13" src="/gallery/thumb/IMG_7225.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="14" src="/gallery/thumb/DSC8475.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="15" src="/gallery/thumb/DSC8260.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="16" src="/gallery/thumb/20231009_211324.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="17" src="/gallery/thumb/IMG_9242.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="18" src="/gallery/thumb/DSC8444.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="19" src="/gallery/thumb/DSC9652.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="20" src="/gallery/thumb/IMG_9230.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="21" src="/gallery/thumb/IMG_9156.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="22" src="/gallery/thumb/IMG_7312.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="23" src="/gallery/thumb/DSC8484.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="24" src="/gallery/thumb/IMG_3279.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="25" src="/gallery/thumb/20221125_225023.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="26" src="/gallery/thumb/IMG_6426.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="27" src="/gallery/thumb/20221126_130620.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="28" src="/gallery/thumb/20240518_183456.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="29" src="/gallery/thumb/IMG_7248.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="30" src="/gallery/thumb/IMG_6387.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="31" src="/gallery/thumb/DSC8261.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="32" src="/gallery/thumb/20240518_190303.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="33" src="/gallery/thumb/DSC8435.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="34" src="/gallery/thumb/2024-05-29_16.52.12_2d7a61a4.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="35" src="/gallery/thumb/20231014_120234.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="36" src="/gallery/thumb/DSC8273.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="37" src="/gallery/thumb/IMG-20211112-WA0006.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="38" src="/gallery/thumb/DSC8296.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="39" src="/gallery/thumb/IMG_9086.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="40" src="/gallery/thumb/IMG-20220602-WA0003.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="41" src="/gallery/thumb/DSC8271.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="42" src="/gallery/thumb/IMG_3803.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="43" src="/gallery/thumb/IMG_7225.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="44" src="/gallery/thumb/DSC8475.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="45" src="/gallery/thumb/DSC8260.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="46" src="/gallery/thumb/20231009_211324.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="47" src="/gallery/thumb/IMG_9242.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="48" src="/gallery/thumb/DSC8444.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="49" src="/gallery/thumb/DSC9652.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="50" src="/gallery/thumb/IMG_9230.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="51" src="/gallery/thumb/IMG_9156.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="52" src="/gallery/thumb/IMG_7312.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="53" src="/gallery/thumb/DSC8484.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="54" src="/gallery/thumb/IMG_3279.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="55" src="/gallery/thumb/20221125_225023.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="56" src="/gallery/thumb/IMG_6426.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="57" src="/gallery/thumb/20221126_130620.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="58" src="/gallery/thumb/20240518_183456.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
+          <img key="59" src="/gallery/thumb/IMG_7248.jpg" alt="HBSME" className="h-52 w-auto object-cover rounded-xl flex-shrink-0 shadow-sm" loading="lazy" />
           </div>
         </div>
       </section>
-
       {/* Partenaires */}
       {partenaires.length > 0 && (
         <section className="border-t border-gray-100 bg-white py-12 px-4">
