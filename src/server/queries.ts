@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { and, asc, desc, eq, gt, isNotNull, isNull, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { ffhbMatch, ffhbTeam, licencee, membreCa, partenaire } from '../db/schema'
+import { ffhbMatch, ffhbTeam, licencee, membreCa, partenaire, collectif as collectifTable, collectifCoach, hbsmeUser } from '../db/schema'
 
 const CLUB = 'HANDBALL SAINT MEDARD D\'EYRANS'
 const LOGO_BASE = 'https://media-logos-clubs.ffhandball.fr/64/'
@@ -193,4 +193,72 @@ export const getMembresCa = createServerFn().handler(async () => {
     .from(membreCa)
     .where(eq(membreCa.active, true))
     .orderBy(asc(membreCa.sortOrder), asc(membreCa.nom))
+})
+
+// ─── Collectifs ───────────────────────────────────────────────────────────────
+
+export const getCollectifs = createServerFn().handler(async () => {
+  // Saison courante ou dernière disponible
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const year = now.getFullYear()
+  const currentSaison = month >= 7 ? `${year}/${year + 1}` : `${year - 1}/${year}`
+
+  // Cherche la saison courante, sinon la plus récente
+  const saisonRows = await db
+    .selectDistinct({ saison: collectifTable.saison })
+    .from(collectifTable)
+    .orderBy(desc(collectifTable.saison))
+    .limit(5)
+
+  const availableSaisons = saisonRows.map(r => r.saison)
+  const saison = availableSaisons.includes(currentSaison)
+    ? currentSaison
+    : (availableSaisons[0] ?? currentSaison)
+
+  const rows = await db
+    .select({
+      id: collectifTable.id,
+      categorie: collectifTable.categorie,
+      nom: collectifTable.nom,
+      saison: collectifTable.saison,
+      description: collectifTable.description,
+      photo: collectifTable.photo,
+      sortOrder: collectifTable.sortOrder,
+      coachPrenom: hbsmeUser.prenom,
+      coachNom: hbsmeUser.nom,
+      coachPhoto: hbsmeUser.photo,
+      coachRole: collectifCoach.role,
+      coachSortOrder: collectifCoach.sortOrder,
+    })
+    .from(collectifTable)
+    .leftJoin(collectifCoach, eq(collectifCoach.collectifId, collectifTable.id))
+    .leftJoin(hbsmeUser, eq(hbsmeUser.id, collectifCoach.userId))
+    .where(and(eq(collectifTable.saison, saison), eq(collectifTable.active, true)))
+    .orderBy(collectifTable.sortOrder, collectifCoach.sortOrder)
+
+  // Regrouper les coachs par collectif
+  const map = new Map<number, {
+    id: number; categorie: string; nom: string; saison: string
+    description: string | null; photo: string | null
+    coachs: { prenom: string; nom: string; photo: string | null; role: string | null }[]
+  }>()
+
+  for (const row of rows) {
+    if (!map.has(row.id)) {
+      map.set(row.id, {
+        id: row.id, categorie: row.categorie, nom: row.nom,
+        saison: row.saison, description: row.description, photo: row.photo,
+        coachs: [],
+      })
+    }
+    if (row.coachNom) {
+      map.get(row.id)!.coachs.push({
+        prenom: row.coachPrenom!, nom: row.coachNom,
+        photo: row.coachPhoto, role: row.coachRole,
+      })
+    }
+  }
+
+  return { collectifs: Array.from(map.values()), saison, isCurrent: saison === currentSaison }
 })

@@ -110,3 +110,33 @@ export const inscription = pgTable('inscription', {
   faitA: varchar('fait_a', { length: 200 }),
   faitLe: varchar('fait_le', { length: 10 }),
 })
+
+export const hbsmeUser = pgTable('hbsme_user', {
+  id: serial('id').primaryKey(),
+  nom: varchar('nom', { length: 100 }).notNull(),
+  prenom: varchar('prenom', { length: 100 }).notNull(),
+  email: varchar('email', { length: 200 }).notNull().unique(),
+  passwordHash: varchar('password_hash', { length: 255 }),
+  photo: varchar('photo', { length: 255 }),
+  role: varchar('role', { length: 50 }).notNull().default('viewer'),
+  active: boolean('active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const collectif = pgTable('collectif', {
+  id: serial('id').primaryKey(),
+  categorie: varchar('categorie', { length: 20 }).notNull(),
+  nom: varchar('nom', { length: 150 }).notNull(),
+  saison: varchar('saison', { length: 9 }).notNull(),
+  description: text('description'),
+  photo: varchar('photo', { length: 255 }),
+  sortOrder: integer('sort_order').default(0),
+  active: boolean('active').default(true),
+})
+
+export const collectifCoach = pgTable('collectif_coach', {
+  collectifId: integer('collectif_id').notNull().references(() => collectif.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => hbsmeUser.id, { onDelete: 'cascade' }),
+  role: varchar('role', { length: 100 }).default('Entraîneur'),
+  sortOrder: integer('sort_order').default(0),
+})

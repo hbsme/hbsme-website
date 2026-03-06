@@ -231,6 +231,7 @@ function EntrainementsPage() {
             <Link to="/" className="hover:text-pink-800 transition-colors">Accueil</Link>
             <Link to="/partenaires" className="hover:text-pink-800 transition-colors">Partenaires</Link>
             <Link to="/conseil-administration" className="hover:text-pink-800 transition-colors">Le Club</Link>
+            <Link to="/collectifs" className="hover:text-pink-600 transition-colors">Collectifs</Link>
           </nav>
         </div>
       </header>

@@ -13,6 +13,7 @@ import { Route as PartenairesRouteImport } from './routes/partenaires'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as EntrainementsRouteImport } from './routes/entrainements'
 import { Route as ConseilAdministrationRouteImport } from './routes/conseil-administration'
+import { Route as CollectifsRouteImport } from './routes/collectifs'
 import { Route as CharteRouteImport } from './routes/charte'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -37,6 +38,11 @@ const ConseilAdministrationRoute = ConseilAdministrationRouteImport.update({
   path: '/conseil-administration',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectifsRoute = CollectifsRouteImport.update({
+  id: '/collectifs',
+  path: '/collectifs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CharteRoute = CharteRouteImport.update({
   id: '/charte',
   path: '/charte',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/charte': typeof CharteRoute
+  '/collectifs': typeof CollectifsRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/entrainements': typeof EntrainementsRoute
   '/inscription': typeof InscriptionRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/charte': typeof CharteRoute
+  '/collectifs': typeof CollectifsRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/entrainements': typeof EntrainementsRoute
   '/inscription': typeof InscriptionRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/charte': typeof CharteRoute
+  '/collectifs': typeof CollectifsRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/entrainements': typeof EntrainementsRoute
   '/inscription': typeof InscriptionRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/charte'
+    | '/collectifs'
     | '/conseil-administration'
     | '/entrainements'
     | '/inscription'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/charte'
+    | '/collectifs'
     | '/conseil-administration'
     | '/entrainements'
     | '/inscription'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/charte'
+    | '/collectifs'
     | '/conseil-administration'
     | '/entrainements'
     | '/inscription'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   CharteRoute: typeof CharteRoute
+  CollectifsRoute: typeof CollectifsRoute
   ConseilAdministrationRoute: typeof ConseilAdministrationRoute
   EntrainementsRoute: typeof EntrainementsRoute
   InscriptionRoute: typeof InscriptionRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConseilAdministrationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collectifs': {
+      id: '/collectifs'
+      path: '/collectifs'
+      fullPath: '/collectifs'
+      preLoaderRoute: typeof CollectifsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/charte': {
       id: '/charte'
       path: '/charte'
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   CharteRoute: CharteRoute,
+  CollectifsRoute: CollectifsRoute,
   ConseilAdministrationRoute: ConseilAdministrationRoute,
   EntrainementsRoute: EntrainementsRoute,
   InscriptionRoute: InscriptionRoute,
