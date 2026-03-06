@@ -1,28 +1,46 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const navLinks = [
   { to: '/', label: 'Accueil', exact: true },
   { to: '/collectifs', label: 'Collectifs' },
   { to: '/entrainements', label: 'Entraînements' },
   { to: '/galerie', label: 'Galerie' },
+] as const
+
+const clubLinks = [
+  { to: '/conseil-administration', label: 'Conseil d\'administration' },
+  { to: '/charte', label: 'Charte du club' },
   { to: '/partenaires', label: 'Partenaires' },
-  { to: '/conseil-administration', label: 'Le Club' },
-  { to: '/charte', label: 'Charte' },
 ] as const
 
 export function NavHeader() {
   const { location } = useRouterState()
   const pathname = location.pathname
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [clubOpen, setClubOpen] = useState(false)
+  const clubRef = useRef<HTMLDivElement>(null)
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname.startsWith(to)
+
+  const isClubActive = clubLinks.some(l => pathname.startsWith(l.to))
 
   const linkClass = (to: string, exact?: boolean) =>
     isActive(to, exact)
       ? 'text-pink-600 font-semibold underline underline-offset-4 decoration-pink-400'
       : 'text-gray-800 font-medium hover:text-pink-600 hover:underline hover:underline-offset-4 hover:decoration-pink-400 transition-colors'
+
+  // Fermer le dropdown si clic en dehors
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (clubRef.current && !clubRef.current.contains(e.target as Node)) {
+        setClubOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200 shadow-sm">
@@ -42,6 +60,45 @@ export function NavHeader() {
               {label}
             </Link>
           ))}
+
+          {/* Dropdown Le Club */}
+          <div className="relative" ref={clubRef}>
+            <button
+              onClick={() => setClubOpen(o => !o)}
+              className={`flex items-center gap-1 transition-colors ${
+                isClubActive
+                  ? 'text-pink-600 font-semibold underline underline-offset-4 decoration-pink-400'
+                  : 'text-gray-800 font-medium hover:text-pink-600 transition-colors'
+              }`}
+            >
+              Le Club
+              <svg
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${clubOpen ? 'rotate-180' : ''}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {clubOpen && (
+              <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                {clubLinks.map(({ to, label }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setClubOpen(false)}
+                    className={`block px-4 py-2.5 text-sm transition-colors ${
+                      isActive(to)
+                        ? 'bg-pink-50 text-pink-600 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-pink-600'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           <span className="h-5 w-px bg-gray-300" aria-hidden />
 
@@ -85,7 +142,7 @@ export function NavHeader() {
         </button>
       </div>
 
-      {/* Menu mobile déroulant */}
+      {/* Menu mobile */}
       {mobileOpen && (
         <nav className="md:hidden border-t border-gray-100 bg-white px-4 py-3 flex flex-col gap-1">
           {navLinks.map(({ to, label, exact }) => (
@@ -102,6 +159,26 @@ export function NavHeader() {
               {label}
             </Link>
           ))}
+
+          {/* Groupe Le Club en mobile */}
+          <div className="mt-1">
+            <p className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest">Le Club</p>
+            {clubLinks.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setMobileOpen(false)}
+                className={`block py-2.5 px-5 rounded-lg text-sm font-medium ${
+                  isActive(to)
+                    ? 'bg-pink-50 text-pink-600 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-pink-600'
+                } transition-colors`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+
           <Link
             to="/inscription"
             onClick={() => setMobileOpen(false)}
