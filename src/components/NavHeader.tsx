@@ -33,8 +33,8 @@ export function NavHeader() {
               to={to}
               className={
                 isActive(to, exact)
-                  ? 'text-pink-600 font-semibold'
-                  : 'text-gray-700 hover:text-pink-600 transition-colors'
+                  ? 'text-pink-600 font-semibold underline underline-offset-4 decoration-pink-400'
+                  : 'text-gray-800 font-medium hover:text-pink-600 hover:underline hover:underline-offset-4 hover:decoration-pink-400 transition-colors'
               }
             >
               {label}
