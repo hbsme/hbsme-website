@@ -506,8 +506,8 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
         </span>
       </div>
 
-      {/* Colonnes header */}
-      <div className={`${t.colHead} px-5 py-2 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 text-xs font-bold tracking-widest uppercase`}>
+      {/* Colonnes header — desktop uniquement */}
+      <div className={`hidden md:grid ${t.colHead} px-5 py-2 grid-cols-[5rem_3rem_1fr_1fr] gap-4 text-xs font-bold tracking-widest uppercase`}>
         <span>Heure</span>
         <span>Cat.</span>
         <span>Équipe</span>
@@ -530,38 +530,62 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
           return (
             <div
               key={m.id}
-              className={`px-5 py-4 grid grid-cols-[5rem_3rem_1fr_1fr] gap-4 items-center ${i % 2 === 0 ? t.rowEven : t.rowOdd} ${t.rowHover} transition-colors`}
+              className={`${i % 2 === 0 ? t.rowEven : t.rowOdd} ${t.rowHover} transition-colors`}
             >
-              <span className={`${t.time} font-mono font-bold text-lg tabular-nums`}>{time}</span>
-
-              {categoryLabel ? (
-                <span className={`text-xs font-black ${t.catText} ${t.catBg} border rounded px-1.5 py-0.5 text-center w-fit`}>
-                  {categoryLabel}
-                </span>
-              ) : <span />}
-
-              <div className="flex items-center gap-2 min-w-0">
-                <img src="/logo-hbsme.png" alt="HBSME" className="w-7 h-7 object-contain shrink-0 opacity-90" />
-                <span className={`${t.teamText} font-bold text-sm truncate`}>HBSME</span>
+              {/* Desktop : grille tableau */}
+              <div className="hidden md:grid px-5 py-4 grid-cols-[5rem_3rem_1fr_1fr] gap-4 items-center">
+                <span className={`${t.time} font-mono font-bold text-lg tabular-nums`}>{time}</span>
+                {categoryLabel ? (
+                  <span className={`text-xs font-black ${t.catText} ${t.catBg} border rounded px-1.5 py-0.5 text-center w-fit`}>
+                    {categoryLabel}
+                  </span>
+                ) : <span />}
+                <div className="flex items-center gap-2 min-w-0">
+                  <img src="/logo-hbsme.png" alt="HBSME" className="w-7 h-7 object-contain shrink-0 opacity-90" />
+                  <span className={`${t.teamText} font-bold text-sm truncate`}>HBSME</span>
+                </div>
+                <div className="flex items-center gap-2 min-w-0">
+                  {oppLogo ? (
+                    <img src={oppLogo} alt="" className={`w-7 h-7 object-contain shrink-0 ${t.oppLogoBg} rounded-full p-0.5`}
+                      onError={(e) => {
+                        const img = e.currentTarget
+                        const parent = img.parentNode
+                        if (parent) {
+                          const div = document.createElement('div')
+                          div.className = `w-7 h-7 rounded-full ${t.oppPlaceholder} shrink-0 flex items-center justify-center text-xs font-bold text-gray-400`
+                          div.textContent = teamLabel(oppTeam).replace(/^(HBC|HB|AS|US|SP|ST|STADE|UNION)\s+/i, '').substring(0, 2).toUpperCase()
+                          parent.replaceChild(div, img)
+                        }
+                      }} />
+                  ) : (
+                    <div className={`w-7 h-7 rounded-full ${t.oppPlaceholder} shrink-0`} />
+                  )}
+                  <span className={`${t.oppText} font-medium text-sm truncate`}>{teamLabel(oppTeam)}</span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 min-w-0">
-                {oppLogo ? (
-                  <img src={oppLogo} alt="" className={`w-7 h-7 object-contain shrink-0 ${t.oppLogoBg} rounded-full p-0.5`}
-                    onError={(e) => {
-                      const img = e.currentTarget
-                      const parent = img.parentNode
-                      if (parent) {
-                        const div = document.createElement('div')
-                        div.className = `w-7 h-7 rounded-full ${t.oppPlaceholder} shrink-0 flex items-center justify-center text-xs font-bold text-gray-400`
-                        div.textContent = teamLabel(oppTeam).replace(/^(HBC|HB|AS|US|SP|ST|STADE|UNION)\s+/i, '').substring(0, 2).toUpperCase()
-                        parent.replaceChild(div, img)
-                      }
-                    }} />
-                ) : (
-                  <div className={`w-7 h-7 rounded-full ${t.oppPlaceholder} shrink-0`} />
-                )}
-                <span className={`${t.oppText} font-medium text-sm truncate`}>{teamLabel(oppTeam)}</span>
+              {/* Mobile : carte compacte */}
+              <div className="md:hidden px-4 py-3 flex items-center gap-3">
+                <span className={`${t.time} font-mono font-bold text-xl tabular-nums shrink-0 w-14 text-center`}>{time}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    {categoryLabel && (
+                      <span className={`text-xs font-black ${t.catText} ${t.catBg} border rounded px-1.5 py-0.5`}>
+                        {categoryLabel}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <img src="/logo-hbsme.png" alt="HBSME" className="w-5 h-5 object-contain shrink-0 opacity-90" />
+                    <span className={`${t.teamText} font-bold text-sm`}>HBSME</span>
+                    <span className={`${t.headerSub} text-xs font-mono`}>vs</span>
+                    {oppLogo ? (
+                      <img src={oppLogo} alt="" className={`w-5 h-5 object-contain shrink-0 ${t.oppLogoBg} rounded-full p-0.5`}
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none' }} />
+                    ) : null}
+                    <span className={`${t.oppText} font-medium text-sm truncate`}>{teamLabel(oppTeam)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           )
