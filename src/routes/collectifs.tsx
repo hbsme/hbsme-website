@@ -6,6 +6,12 @@ export const Route = createFileRoute('/collectifs')({
   component: CollectifsPage,
 })
 
+
+// "U11G" → "11G", "SG" / "SF" restent tels quels
+function formatCategorie(cat: string): string {
+  return cat.startsWith('U') ? cat.slice(1) : cat
+}
+
 // Couleurs par sexe
 const colorBySexe = (categorie: string) => {
   if (categorie.endsWith('F')) return 'from-pink-500 to-rose-400'
@@ -48,10 +54,10 @@ function CollectifsPage() {
                 {c.photo ? (
                   <img src={`/collectifs/${c.photo}`} alt={c.nom} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-white text-5xl font-black opacity-30">{c.categorie}</span>
+                  <span className="text-white text-5xl font-black opacity-30">{formatCategorie(c.categorie)}</span>
                 )}
                 <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${badgeBg(c.categorie)}`}>
-                  {c.categorie}
+                  {formatCategorie(c.categorie)}
                 </span>
               </div>
 
