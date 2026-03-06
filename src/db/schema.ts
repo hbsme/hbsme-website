@@ -65,3 +65,48 @@ export const membreCa = pgTable('membre_ca', {
   sortOrder: integer('sort_order').default(0),
   active: boolean('active').default(true),
 })
+
+export const inscription = pgTable('inscription', {
+  id: serial('id').primaryKey(),
+  saison: varchar('saison', { length: 9 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  pdfFilename: varchar('pdf_filename', { length: 255 }),
+  // Licencié
+  nom: varchar('nom', { length: 100 }),
+  prenom: varchar('prenom', { length: 100 }),
+  sexe: varchar('sexe', { length: 1 }),
+  mineur: boolean('mineur'),
+  dateNaissance: varchar('date_naissance', { length: 10 }),
+  lieuNaissance: varchar('lieu_naissance', { length: 200 }),
+  adresse: text('adresse'),
+  telDomicile: varchar('tel_domicile', { length: 20 }),
+  telPortable: varchar('tel_portable', { length: 20 }),
+  email: varchar('email', { length: 200 }),
+  numSecu: varchar('num_secu', { length: 30 }),
+  // Parent 1
+  parent1Nom: varchar('parent1_nom', { length: 100 }),
+  parent1Prenom: varchar('parent1_prenom', { length: 100 }),
+  parent1Profession: varchar('parent1_profession', { length: 100 }),
+  parent1Adresse: text('parent1_adresse'),
+  parent1TelFixe: varchar('parent1_tel_fixe', { length: 20 }),
+  parent1TelPortable: varchar('parent1_tel_portable', { length: 20 }),
+  parent1TelTravail: varchar('parent1_tel_travail', { length: 20 }),
+  parent1Email: varchar('parent1_email', { length: 200 }),
+  // Parent 2
+  parent2Nom: varchar('parent2_nom', { length: 100 }),
+  parent2Prenom: varchar('parent2_prenom', { length: 100 }),
+  parent2Profession: varchar('parent2_profession', { length: 100 }),
+  parent2Adresse: text('parent2_adresse'),
+  parent2TelFixe: varchar('parent2_tel_fixe', { length: 20 }),
+  parent2TelPortable: varchar('parent2_tel_portable', { length: 20 }),
+  parent2TelTravail: varchar('parent2_tel_travail', { length: 20 }),
+  parent2Email: varchar('parent2_email', { length: 200 }),
+  // Autorisation
+  authName: varchar('auth_name', { length: 200 }),
+  authChild: varchar('auth_child', { length: 200 }),
+  authCat: varchar('auth_cat', { length: 100 }),
+  allergies: text('allergies'),
+  droitImage: boolean('droit_image'),
+  faitA: varchar('fait_a', { length: 200 }),
+  faitLe: varchar('fait_le', { length: 10 }),
+})

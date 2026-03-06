@@ -128,7 +128,7 @@ function InscriptionPage() {
 
   const [autorisation, setAutorisation] = useState({
     authName: '', authChild: '', authCat: '',
-    allergies: '', faitA: '', faitLe: '',
+    allergies: '', faitA: "Saint-Médard d'Eyrans", faitLe: new Date().toLocaleDateString('fr-FR'),
   })
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -169,6 +169,7 @@ function InscriptionPage() {
   // ── Submit ──
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    console.log('[inscription] handleSubmit called, charteAccepted:', charteAccepted)
     if (!charteAccepted) {
       alert('Vous devez accepter la charte du club.')
       return
@@ -179,6 +180,7 @@ function InscriptionPage() {
 
     setStatus('submitting')
     try {
+      console.log('[inscription] calling submitInscription...')
       const result = await submitInscription({
         data: {
           licencie: { ...licencie, mineur, sexe: licencie.sexe },
@@ -191,7 +193,8 @@ function InscriptionPage() {
       setResultFilename(result.filename)
       setStatus('success')
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Une erreur est survenue.')
+      console.error('[inscription] error:', err)
+      setErrorMsg(err instanceof Error ? err.message : String(err))
       setStatus('error')
     }
   }
@@ -313,7 +316,7 @@ function InscriptionPage() {
 
               <Field label="Date de naissance (JJ/MM/AAAA)" required>
                 <input
-                  className={inputClass} placeholder="01/01/2010"
+                  className={inputClass} placeholder="dd/mm/yyyy"
                   pattern="\d{2}/\d{2}/\d{4}" required
                   value={licencie.dateNaissance}
                   onChange={e => setLicencie(l => ({ ...l, dateNaissance: e.target.value }))}
@@ -453,7 +456,7 @@ function InscriptionPage() {
                   onChange={e => setAutorisation(a => ({ ...a, faitA: e.target.value }))} />
               </Field>
               <Field label="Le">
-                <input type="date" className={inputClass} value={autorisation.faitLe}
+                <input type="text" className={inputClass} placeholder="dd/mm/yyyy" value={autorisation.faitLe}
                   onChange={e => setAutorisation(a => ({ ...a, faitLe: e.target.value }))} />
               </Field>
             </div>

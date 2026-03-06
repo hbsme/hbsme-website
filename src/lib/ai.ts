@@ -1,7 +1,3 @@
-import { createHash } from 'crypto'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { tmpdir } from 'os'
-import { join } from 'path'
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -23,33 +19,9 @@ type CacheEntry = {
 
 // ─── cache ───────────────────────────────────────────────────────────────────
 
-const CACHE_FILE = join(tmpdir(), 'hbsme_weekend_summary.json')
 
-function computeHash(currentWeek: Match[], history: Match[]): string {
-  const all = [...currentWeek, ...history]
-  const stable = all
-    .map(m => `${m.matchId ?? ''}:${m.score1 ?? ''}:${m.score2 ?? ''}`)
-    .sort()
-    .join('|')
-  return createHash('sha256').update(stable).digest('hex').slice(0, 16)
-}
 
-function readCache(): CacheEntry | null {
-  try {
-    if (!existsSync(CACHE_FILE)) return null
-    return JSON.parse(readFileSync(CACHE_FILE, 'utf-8')) as CacheEntry
-  } catch {
-    return null
-  }
-}
 
-function writeCache(entry: CacheEntry): void {
-  try {
-    writeFileSync(CACHE_FILE, JSON.stringify(entry), 'utf-8')
-  } catch {
-    // non-critique
-  }
-}
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -183,10 +155,25 @@ export async function generateWeekendSummary(
     return fallbackText([])
   }
 
-  const hash = computeHash(currentWeek, history)
-  const cached = readCache()
-  if (cached?.hash === hash) {
-    return cached.text
+  // Imports Node.js lazy (server only)
+  const { createHash } = await import('crypto')
+  const { existsSync, readFileSync, writeFileSync } = await import('fs')
+  const { tmpdir } = await import('os')
+  const { join } = await import('path')
+  const CACHE_FILE = join(tmpdir(), 'hbsme_weekend_summary.json')
+
+  const all = [...currentWeek, ...history]
+  const stable = all.map(m => [m.matchId, m.score1, m.score2].join(":")).sort().join("|")
+  const hash = createHash('sha256').update(stable).digest('hex').slice(0, 16)
+
+  let cached: CacheEntry | null = null
+  try {
+    if (existsSync(CACHE_FILE)) cached = JSON.parse(readFileSync(CACHE_FILE, 'utf-8')) as CacheEntry
+  } catch { /* ignore */ }
+  if (cached?.hash === hash) return cached.text
+
+  const _writeCache = (entry: CacheEntry) => {
+    try { writeFileSync(CACHE_FILE, JSON.stringify(entry), 'utf-8') } catch { /* ignore */ }
   }
 
   const apiKey = process.env.GOOGLE_API_KEY
@@ -207,7 +194,7 @@ export async function generateWeekendSummary(
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? ''
 
     if (text) {
-      writeCache({ hash, text, generatedAt: new Date().toISOString() })
+      _writeCache({ hash, text, generatedAt: new Date().toISOString() })
       return text
     }
   } catch (err) {

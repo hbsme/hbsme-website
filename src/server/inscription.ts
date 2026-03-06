@@ -1,7 +1,4 @@
 import { createServerFn } from '@tanstack/react-start'
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
-import fs from 'node:fs'
-import path from 'node:path'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,76 +49,35 @@ export interface InscriptionPayload {
 
 const MARGIN = 50
 const LINE_HEIGHT = 18
-const PINK = rgb(0.85, 0.2, 0.4)
-const DARK = rgb(0.15, 0.15, 0.15)
-const GRAY = rgb(0.5, 0.5, 0.5)
-
-async function drawTablePage(
-  pdfDoc: PDFDocument,
-  title: string,
-  rows: [string, string][],
-  // biome-ignore lint/suspicious/noExplicitAny: pdf-lib types
-  font: any,
-  // biome-ignore lint/suspicious/noExplicitAny: pdf-lib types
-  boldFont: any,
-) {
-  const page = pdfDoc.addPage([595, 842])
-  const { width, height } = page.getSize()
-  let y = height - MARGIN
-
-  // Title
-  page.drawText(title, {
-    x: MARGIN,
-    y,
-    size: 16,
-    font: boldFont,
-    color: PINK,
-  })
-  y -= LINE_HEIGHT * 1.5
-
-  // Horizontal line
-  page.drawLine({
-    start: { x: MARGIN, y },
-    end: { x: width - MARGIN, y },
-    thickness: 1,
-    color: PINK,
-  })
-  y -= LINE_HEIGHT
-
-  for (const [label, value] of rows) {
-    if (y < MARGIN + LINE_HEIGHT * 2) break
-
-    // Label (gray)
-    page.drawText(label + ' :', {
-      x: MARGIN,
-      y,
-      size: 10,
-      font: boldFont,
-      color: GRAY,
-    })
-
-    // Value (dark) — wrap long strings
-    const maxLen = 80
-    const displayVal = (value || '—').substring(0, maxLen)
-    page.drawText(displayVal, {
-      x: MARGIN + 180,
-      y,
-      size: 10,
-      font: font,
-      color: DARK,
-    })
-
-    y -= LINE_HEIGHT
-  }
-
-  return page
-}
 
 // ─── Main server function ─────────────────────────────────────────────────────
 
 export const submitInscription = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) => data as InscriptionPayload)
   .handler(async (ctx) => {
+    const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib')
+    const PINK = rgb(0.85, 0.2, 0.4)
+    const DARK = rgb(0.15, 0.15, 0.15)
+    const GRAY = rgb(0.5, 0.5, 0.5)
+    // biome-ignore lint/suspicious/noExplicitAny: pdf-lib types
+    async function drawTablePage(pdfDoc: any, title: string, rows: [string, string][], font: any, boldFont: any) {
+      const page = pdfDoc.addPage([595, 842])
+      const { width, height } = page.getSize()
+      let y = height - MARGIN
+      page.drawText(title, { x: MARGIN, y, size: 16, font: boldFont, color: PINK })
+      y -= LINE_HEIGHT * 1.5
+      page.drawLine({ start: { x: MARGIN, y }, end: { x: width - MARGIN, y }, thickness: 1, color: PINK })
+      y -= LINE_HEIGHT
+      for (const [label, value] of rows) {
+        if (y < MARGIN + LINE_HEIGHT * 2) break
+        page.drawText(label + " :", { x: MARGIN, y, size: 10, font: boldFont, color: GRAY })
+        page.drawText((value || "-").substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
+        y -= LINE_HEIGHT
+      }
+      return page
+    }
+    const fs = await import('node:fs')
+    const path = await import('node:path')
     const { licencie, parent1, parent2, autorisation, signatureDataUrl } = ctx.data
 
     // Build filename
@@ -131,11 +87,9 @@ export const submitInscription = createServerFn({ method: 'POST' })
       .replace(/[^a-zA-Z0-9_-]/g, '_')
 
     const PDF_DIR = '/home/hbsme/inscription/data/pdf'
-    const JSON_DIR = '/home/hbsme/inscription/data/json'
 
     // Ensure dirs exist
-    fs.mkdirSync(PDF_DIR, { recursive: true })
-    fs.mkdirSync(JSON_DIR, { recursive: true })
+    fs.default.mkdirSync(PDF_DIR, { recursive: true })
 
     // ── Generate PDF ──────────────────────────────────────────────────────────
     const pdfDoc = await PDFDocument.create()
@@ -188,7 +142,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
         ['Email', parent1.email],
       ] as [string, string][]) {
         page2.drawText(label + ' :', { x: MARGIN, y, size: 10, font: boldFont, color: GRAY })
-        page2.drawText((value || '—').substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
+        page2.drawText((value || '-').substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
         y -= LINE_HEIGHT
       }
 
@@ -207,7 +161,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
         ['Email', parent2.email],
       ] as [string, string][]) {
         page2.drawText(label + ' :', { x: MARGIN, y, size: 10, font: boldFont, color: GRAY })
-        page2.drawText((value || '—').substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
+        page2.drawText((value || '-').substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
         y -= LINE_HEIGHT
       }
     }
@@ -234,7 +188,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
       ['Catégorie', autorisation.authCat],
     ] as [string, string][]) {
       page3.drawText(label + ' :', { x: MARGIN, y: y3, size: 10, font: boldFont, color: GRAY })
-      page3.drawText((value || '—').substring(0, 80), { x: MARGIN + 180, y: y3, size: 10, font, color: DARK })
+      page3.drawText((value || '-').substring(0, 80), { x: MARGIN + 180, y: y3, size: 10, font, color: DARK })
       y3 -= LINE_HEIGHT
     }
 
@@ -243,9 +197,9 @@ export const submitInscription = createServerFn({ method: 'POST' })
     y3 -= LINE_HEIGHT
 
     for (const txt of [
-      '✓ Transport : autorisation d\'utiliser les transports en commun ou véhicules de bénévoles',
-      '✓ Médical : autorisation d\'intervention médicale en cas d\'urgence',
-      '✓ Hospitalisation : autorisation de fin d\'hospitalisation',
+      '[OK] Transport : autorisation d\'utiliser les transports en commun ou véhicules de bénévoles',
+      '[OK] Médical : autorisation d\'intervention médicale en cas d\'urgence',
+      '[OK] Hospitalisation : autorisation de fin d\'hospitalisation',
     ]) {
       page3.drawText(txt.substring(0, 85), { x: MARGIN, y: y3, size: 9, font, color: DARK })
       y3 -= LINE_HEIGHT
@@ -294,12 +248,56 @@ export const submitInscription = createServerFn({ method: 'POST' })
 
     // Save PDF
     const pdfBytes = await pdfDoc.save()
-    const pdfPath = path.join(PDF_DIR, `${filename}.pdf`)
-    fs.writeFileSync(pdfPath, pdfBytes)
+    const pdfPath = path.default.join(PDF_DIR, `${filename}.pdf`)
+    fs.default.writeFileSync(pdfPath, pdfBytes)
 
-    // Save JSON
-    const jsonPath = path.join(JSON_DIR, `${filename}.json`)
-    fs.writeFileSync(jsonPath, JSON.stringify(ctx.data, null, 2))
+    // Save to DB
+    const { db } = await import('../db')
+    const { inscription: inscriptionTable } = await import('../db/schema')
+    const now = new Date()
+    const month = now.getMonth() + 1
+    const year = now.getFullYear()
+    const saison = month >= 7
+      ? `${year}/${String(year + 1)}`
+      : `${String(year - 1)}/${year}`
+    await db.insert(inscriptionTable).values({
+      saison,
+      pdfFilename: filename,
+      nom: licencie.nom,
+      prenom: licencie.prenom,
+      sexe: licencie.sexe,
+      mineur: licencie.mineur,
+      dateNaissance: licencie.dateNaissance,
+      lieuNaissance: licencie.lieuNaissance,
+      adresse: licencie.adresse,
+      telDomicile: licencie.telDomicile,
+      telPortable: licencie.telPortable,
+      email: licencie.email,
+      numSecu: licencie.numSecu,
+      parent1Nom: parent1.nom,
+      parent1Prenom: parent1.prenom,
+      parent1Profession: parent1.profession,
+      parent1Adresse: parent1.adresse,
+      parent1TelFixe: parent1.telFixe,
+      parent1TelPortable: parent1.telPortable,
+      parent1TelTravail: parent1.telTravail,
+      parent1Email: parent1.email,
+      parent2Nom: parent2.nom,
+      parent2Prenom: parent2.prenom,
+      parent2Profession: parent2.profession,
+      parent2Adresse: parent2.adresse,
+      parent2TelFixe: parent2.telFixe,
+      parent2TelPortable: parent2.telPortable,
+      parent2TelTravail: parent2.telTravail,
+      parent2Email: parent2.email,
+      authName: autorisation.authName,
+      authChild: autorisation.authChild,
+      authCat: autorisation.authCat,
+      allergies: autorisation.allergies,
+      droitImage: autorisation.droitImage,
+      faitA: autorisation.faitA,
+      faitLe: autorisation.faitLe,
+    })
 
     // ── Telegram notification ──────────────────────────────────────────────────
     const BOT_TOKEN = '991040556:AAHWfiY-uSdYSeRSkij3dBaBRnpdu5rtyFo'
