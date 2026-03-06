@@ -115,20 +115,38 @@ export const getUpcomingBirthdays = createServerFn().handler(async () => {
 })
 
 export const getWeekendNews = createServerFn().handler(async () => {
-  // Récupère les résultats du week-end précédent pour générer l'actu
   const lastMonday = sql`(NOW() - (EXTRACT(DOW FROM NOW())::int + 6) * interval '1 day')::date`
-  const rows = await db
+
+  // Matchs du week-end
+  const weekendMatches = await db
     .select()
     .from(ffhbMatch)
-    .where(
-      and(
-        isNotNull(ffhbMatch.score1),
-        sql`${ffhbMatch.date} >= ${lastMonday}`,
-        sql`${ffhbMatch.date} < NOW()`,
-      ),
-    )
+    .where(and(
+      isNotNull(ffhbMatch.score1),
+      sql`${ffhbMatch.date} >= ${lastMonday}`,
+      sql`${ffhbMatch.date} < NOW()`,
+    ))
     .orderBy(asc(ffhbMatch.date))
-  return rows
+
+  // Historique 8 semaines pour contexte IA
+  const allHistory = await db
+    .select({ matchId: ffhbMatch.matchId, date: ffhbMatch.date, competition: ffhbMatch.competition,
+      team1: ffhbMatch.team1, team2: ffhbMatch.team2, score1: ffhbMatch.score1, score2: ffhbMatch.score2 })
+    .from(ffhbMatch)
+    .where(and(
+      isNotNull(ffhbMatch.score1),
+      sql`${ffhbMatch.date} >= (NOW() - interval '8 weeks')::date`,
+      sql`${ffhbMatch.date} < NOW()`,
+    ))
+    .orderBy(asc(ffhbMatch.date))
+
+  const weekendIds = new Set(weekendMatches.map(m => m.matchId))
+  const history = allHistory.filter(m => !weekendIds.has(m.matchId))
+
+  const { generateWeekendSummary } = await import('../lib/ai')
+  const weekendSummary = await generateWeekendSummary(weekendMatches, history)
+
+  return { weekendMatches, weekendSummary }
 })
 
 export const getTeamOverview = createServerFn().handler(async () => {
