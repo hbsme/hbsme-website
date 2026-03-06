@@ -21,6 +21,7 @@ function PartenairesPage() {
         {/* Intro */}
         <div className="text-center mb-14">
           <h1 className="text-4xl font-black text-gray-900 mb-4">Nos Partenaires</h1>
+          <p className="text-gray-600 mt-3 max-w-2xl">Nos partenaires sont bien plus qu'un apport financier — ils sont comme des joueurs, essentiels au bon développement du club. Le HBSME les remercie chaleureusement et vous invite à les soutenir à votre tour.</p>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
             Bien plus qu'un soutien financier, nos partenaires font partie intégrante du club.
             L'équipe du HBSME les remercie chaleureusement et vous invite à les soutenir.

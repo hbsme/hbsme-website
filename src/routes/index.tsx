@@ -702,7 +702,8 @@ function Home() {
 
         {/* Prochains matchs */}
         <section id="matchs">
-          <h2 className="text-2xl font-black text-gray-900 mb-8">Prochains matchs</h2>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Prochains matchs</h2>
+          <p className="text-gray-500 mb-6 max-w-2xl">Prêts à vibrer au rythme du handball ? Voici le programme du week-end pour toutes nos équipes. Venez encourager les nôtres — entrée libre pour tous !</p>
           {sortedUpcoming.length === 0 ? (
             <p className="text-gray-400">Aucun match à venir renseigné.</p>
           ) : (
@@ -712,7 +713,8 @@ function Home() {
 
         {/* Classements */}
         <section id="classements">
-          <h2 className="text-2xl font-black text-gray-900 mb-6">Nos équipes</h2>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Nos équipes</h2>
+          <p className="text-gray-500 mb-6 max-w-2xl">Découvrez le classement actuel de chacun de nos collectifs en compétition cette saison.</p>
           <TeamsOverview teams={teamOverview} />
         </section>
 

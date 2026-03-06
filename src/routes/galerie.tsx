@@ -40,6 +40,7 @@ function GaleriePage() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Galerie</h1>
           <p className="text-gray-500 mt-1">{allPhotos.length} photos · Vie du club depuis 2014</p>
+          <p className="text-gray-500 mt-2 max-w-2xl text-sm">Matchs, tournois, moments de partage... retrouvez tous les souvenirs photographiques du HBSME. Cliquez sur une photo pour l'agrandir.</p>
         </div>
 
         {/* Grille uniforme — ratio fixe pour éviter tout layout shift */}

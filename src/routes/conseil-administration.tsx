@@ -67,6 +67,7 @@ function ConseilAdministrationPage() {
         {/* Intro */}
         <div className="text-center mb-14">
           <h1 className="text-4xl font-black text-gray-900 mb-4">Conseil d'Administration</h1>
+          <p className="text-gray-500 mt-3 max-w-2xl">À la tête de notre club, une équipe passionnée et dévouée. Retrouvez ici la composition complète de notre conseil d'administration, qui œuvre au quotidien pour le développement du HBSME.</p>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
             À la tête de notre club, une équipe passionnée et dévouée. Retrouvez ici la composition complète de notre conseil d'administration.
           </p>

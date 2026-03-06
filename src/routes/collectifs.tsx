@@ -35,6 +35,7 @@ function CollectifsPage() {
         {/* Titre */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Nos collectifs</h1>
+          <p className="text-gray-500 mt-3 max-w-2xl">Découvrez toutes nos équipes de handball, de la plus jeune à la plus expérimentée ! Chaque collectif a ses entraîneurs passionnés prêts à accompagner chaque joueur dans sa progression. Que vous soyez débutant ou confirmé, vous trouverez votre place au sein du HBSME.</p>
           <div className="flex items-center gap-3 mt-2">
             <p className="text-gray-500">Saison {saison}</p>
             {!isCurrent && (

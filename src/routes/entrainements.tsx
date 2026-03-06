@@ -222,6 +222,7 @@ function EntrainementsPage() {
         {/* Intro */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-black text-gray-900 mb-4">Entraînements</h1>
+          <p className="text-gray-500 mt-3 max-w-2xl">Consultez le calendrier des entraînements pour connaître les horaires et les lieux de toutes nos séances. Que vous soyez débutant ou confirmé, il y a une place pour vous au HBSME.</p>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
             Consultez le planning de la saison. Que vous soyez débutant ou confirmé,
             il y a une place pour vous dans l'une de nos équipes.
