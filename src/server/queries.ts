@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { withCache, TTL } from '../lib/cache'
 import { and, asc, desc, eq, gt, isNotNull, isNull, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { ffhbMatch, ffhbTeam, licencee, membreCa, partenaire, collectif as collectifTable, collectifCoach, hbsmeUser } from '../db/schema'
@@ -34,7 +35,8 @@ export function isHome(team1: string): boolean {
   return team1.startsWith(CLUB.substring(0, 15))
 }
 
-export const getUpcomingMatches = createServerFn().handler(async () => {
+export const getUpcomingMatches = createServerFn().handler(() =>
+  withCache('upcoming-matches', async () => {
   const now = new Date()
   const rows = await db
     .select()
@@ -50,9 +52,11 @@ export const getUpcomingMatches = createServerFn().handler(async () => {
     .orderBy(asc(ffhbMatch.date))
     .limit(8)
   return rows
-})
+}, TTL.LIVE)
+)
 
-export const getRecentResults = createServerFn().handler(async () => {
+export const getRecentResults = createServerFn().handler(() =>
+  withCache('recent-results', async () => {
   // Retourne tous les résultats depuis lundi dernier (même fenêtre que l'actu)
   // Si rien cette semaine, repli sur les 12 derniers pour ne pas afficher une section vide
   const lastMonday = sql`(NOW() - (EXTRACT(DOW FROM NOW())::int + 6) * interval '1 day')::date`
@@ -75,18 +79,22 @@ export const getRecentResults = createServerFn().handler(async () => {
     .where(isNotNull(ffhbMatch.score1))
     .orderBy(desc(ffhbMatch.date))
     .limit(12)
-})
+}, TTL.LIVE)
+)
 
-export const getStandings = createServerFn().handler(async () => {
+export const getStandings = createServerFn().handler(() =>
+  withCache('standings', async () => {
   const rows = await db
     .select()
     .from(ffhbTeam)
     .where(isNotNull(ffhbTeam.score_place))
     .orderBy(asc(ffhbTeam.competition), asc(ffhbTeam.score_place))
   return rows
-})
+}, TTL.LIVE)
+)
 
-export const getUpcomingBirthdays = createServerFn().handler(async () => {
+export const getUpcomingBirthdays = createServerFn().handler(() =>
+  withCache('birthdays', async () => {
   // Anniversaires dans les 14 prochains jours (compare mois+jour, peu importe l'année)
   const rows = await db
     .select({
@@ -112,9 +120,11 @@ export const getUpcomingBirthdays = createServerFn().handler(async () => {
       )`,
     )
   return rows
-})
+}, TTL.LIVE)
+)
 
-export const getWeekendNews = createServerFn().handler(async () => {
+export const getWeekendNews = createServerFn().handler(() =>
+  withCache('weekend-news', async () => {
   const lastMonday = sql`(NOW() - (EXTRACT(DOW FROM NOW())::int + 6) * interval '1 day')::date`
 
   // Matchs du week-end
@@ -147,9 +157,11 @@ export const getWeekendNews = createServerFn().handler(async () => {
   const weekendSummary = await generateWeekendSummary(weekendMatches, history)
 
   return { weekendMatches, weekendSummary }
-})
+}, TTL.LIVE)
+)
 
-export const getTeamOverview = createServerFn().handler(async () => {
+export const getTeamOverview = createServerFn().handler(() =>
+  withCache('team-overview', async () => {
   // Toutes les entrées HBSME avec matchs joués
   const rows = await db
     .select()
@@ -171,9 +183,11 @@ export const getTeamOverview = createServerFn().handler(async () => {
     if (!cur || fd > cur) maxFirstday.set(row.competition, fd)
   }
   return rows.filter(row => row.firstday === maxFirstday.get(row.competition))
-})
+}, TTL.LIVE)
+)
 
-export const getMatchHistory = createServerFn().handler(async () => {
+export const getMatchHistory = createServerFn().handler(() =>
+  withCache('match-history', async () => {
   // Récupère les 8 dernières semaines de résultats (pour contexte IA)
   const rows = await db
     .select({
@@ -195,27 +209,33 @@ export const getMatchHistory = createServerFn().handler(async () => {
     )
     .orderBy(asc(ffhbMatch.date))
   return rows
-})
+}, TTL.LIVE)
+)
 
-export const getPartenaires = createServerFn().handler(async () => {
+export const getPartenaires = createServerFn().handler(() =>
+  withCache('partenaires', async () => {
   return db
     .select()
     .from(partenaire)
     .where(eq(partenaire.active, true))
     .orderBy(asc(partenaire.sortOrder), asc(partenaire.name))
-})
+}, TTL.SEASON)
+)
 
-export const getMembresCa = createServerFn().handler(async () => {
+export const getMembresCa = createServerFn().handler(() =>
+  withCache('membres-ca', async () => {
   return db
     .select()
     .from(membreCa)
     .where(eq(membreCa.active, true))
     .orderBy(asc(membreCa.sortOrder), asc(membreCa.nom))
-})
+}, TTL.SEASON)
+)
 
 // ─── Collectifs ───────────────────────────────────────────────────────────────
 
-export const getCollectifs = createServerFn().handler(async () => {
+export const getCollectifs = createServerFn().handler(() =>
+  withCache('collectifs', async () => {
   // Saison courante ou dernière disponible
   const now = new Date()
   const month = now.getMonth() + 1
@@ -279,11 +299,13 @@ export const getCollectifs = createServerFn().handler(async () => {
   }
 
   return { collectifs: Array.from(map.values()), saison, isCurrent: saison === currentSaison }
-})
+}, TTL.SEASON)
+)
 
 // ─── Galerie photos ───────────────────────────────────────────────────────────
 
-export const getGalleryPhotos = createServerFn().handler(async () => {
+export const getGalleryPhotos = createServerFn().handler(() =>
+  withCache('gallery-photos', async () => {
   const { readdir } = await import('fs/promises')
   const { join } = await import('path')
 
@@ -300,4 +322,5 @@ export const getGalleryPhotos = createServerFn().handler(async () => {
     full: `/gallery/fullsize/${filename}`,
     filename,
   }))
-})
+}, TTL.STATIC)
+)
