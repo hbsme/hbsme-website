@@ -702,7 +702,7 @@ function Home() {
             <p className="text-sm text-gray-500 mt-1">Moments partagés sur et hors du terrain</p>
           </div>
           <a
-            href="https://handball-saint-medard-deyrans.fr/galerie/"
+            href="/galerie"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-pink-600 hover:text-pink-700 font-medium transition-colors"
@@ -803,7 +803,7 @@ function Home() {
                   />
                 )
                 return p.url
-                  ? <a key={p.id} href={p.url} target="_blank" rel="noopener noreferrer">{logo}</a>
+                  ? <a key={p.id} href={p.url} >{logo}</a>
                   : logo
               })}
             </div>

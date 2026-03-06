@@ -280,3 +280,24 @@ export const getCollectifs = createServerFn().handler(async () => {
 
   return { collectifs: Array.from(map.values()), saison, isCurrent: saison === currentSaison }
 })
+
+// ─── Galerie photos ───────────────────────────────────────────────────────────
+
+export const getGalleryPhotos = createServerFn().handler(async () => {
+  const { readdir } = await import('fs/promises')
+  const { join } = await import('path')
+
+  const thumbDir = join(process.cwd(), 'public', 'gallery', 'thumb')
+  const files = await readdir(thumbDir)
+
+  // Trier : d'abord les plus récents (noms de fichiers avec dates)
+  const sorted = files
+    .filter(f => f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png'))
+    .sort((a, b) => b.localeCompare(a))
+
+  return sorted.map(filename => ({
+    thumb: `/gallery/thumb/${filename}`,
+    full: `/gallery/fullsize/${filename}`,
+    filename,
+  }))
+})

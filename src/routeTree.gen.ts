@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PartenairesRouteImport } from './routes/partenaires'
 import { Route as InscriptionRouteImport } from './routes/inscription'
+import { Route as GalerieRouteImport } from './routes/galerie'
 import { Route as EntrainementsRouteImport } from './routes/entrainements'
 import { Route as ConseilAdministrationRouteImport } from './routes/conseil-administration'
 import { Route as CollectifsRouteImport } from './routes/collectifs'
@@ -26,6 +27,11 @@ const PartenairesRoute = PartenairesRouteImport.update({
 const InscriptionRoute = InscriptionRouteImport.update({
   id: '/inscription',
   path: '/inscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalerieRoute = GalerieRouteImport.update({
+  id: '/galerie',
+  path: '/galerie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntrainementsRoute = EntrainementsRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/collectifs': typeof CollectifsRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/entrainements': typeof EntrainementsRoute
+  '/galerie': typeof GalerieRoute
   '/inscription': typeof InscriptionRoute
   '/partenaires': typeof PartenairesRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/collectifs': typeof CollectifsRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/entrainements': typeof EntrainementsRoute
+  '/galerie': typeof GalerieRoute
   '/inscription': typeof InscriptionRoute
   '/partenaires': typeof PartenairesRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/collectifs': typeof CollectifsRoute
   '/conseil-administration': typeof ConseilAdministrationRoute
   '/entrainements': typeof EntrainementsRoute
+  '/galerie': typeof GalerieRoute
   '/inscription': typeof InscriptionRoute
   '/partenaires': typeof PartenairesRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/collectifs'
     | '/conseil-administration'
     | '/entrainements'
+    | '/galerie'
     | '/inscription'
     | '/partenaires'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/collectifs'
     | '/conseil-administration'
     | '/entrainements'
+    | '/galerie'
     | '/inscription'
     | '/partenaires'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/collectifs'
     | '/conseil-administration'
     | '/entrainements'
+    | '/galerie'
     | '/inscription'
     | '/partenaires'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   CollectifsRoute: typeof CollectifsRoute
   ConseilAdministrationRoute: typeof ConseilAdministrationRoute
   EntrainementsRoute: typeof EntrainementsRoute
+  GalerieRoute: typeof GalerieRoute
   InscriptionRoute: typeof InscriptionRoute
   PartenairesRoute: typeof PartenairesRoute
 }
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/inscription'
       fullPath: '/inscription'
       preLoaderRoute: typeof InscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/galerie': {
+      id: '/galerie'
+      path: '/galerie'
+      fullPath: '/galerie'
+      preLoaderRoute: typeof GalerieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entrainements': {
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectifsRoute: CollectifsRoute,
   ConseilAdministrationRoute: ConseilAdministrationRoute,
   EntrainementsRoute: EntrainementsRoute,
+  GalerieRoute: GalerieRoute,
   InscriptionRoute: InscriptionRoute,
   PartenairesRoute: PartenairesRoute,
 }
