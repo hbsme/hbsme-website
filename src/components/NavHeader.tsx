@@ -8,6 +8,7 @@ const navLinks = [
   { to: '/galerie', label: 'Galerie' },
   { to: '/partenaires', label: 'Partenaires' },
   { to: '/conseil-administration', label: 'Le Club' },
+  { to: '/charte', label: 'Charte' },
 ] as const
 
 export function NavHeader() {
