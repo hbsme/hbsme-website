@@ -2,6 +2,22 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { getPartenaires } from '../server/queries'
 
 export const Route = createFileRoute('/partenaires')({
+  head: () => ({
+    meta: [
+      { title: 'Nos partenaires — HBSME' },
+      { name: 'description', content: `Les partenaires et sponsors du Handball Saint-Médard d'Eyrans. Rejoignez l'aventure et soutenez le club.` },
+      { property: 'og:title', content: 'Nos partenaires — HBSME' },
+      { property: 'og:description', content: `Les partenaires et sponsors du Handball Saint-Médard d'Eyrans. Rejoignez l'aventure et soutenez le club.` },
+      { property: 'og:url', content: 'https://hbsme.fr/partenaires' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+      { name: 'twitter:title', content: 'Nos partenaires — HBSME' },
+      { name: 'twitter:description', content: `Les partenaires et sponsors du Handball Saint-Médard d'Eyrans.` },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/partenaires' }],
+  }),
   component: PartenairesPage,
   loader: async () => {
     const partenaires = await getPartenaires()

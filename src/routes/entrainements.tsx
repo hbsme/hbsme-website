@@ -1,6 +1,20 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/entrainements')({
+  head: () => ({
+    meta: [
+      { title: 'Entraînements — HBSME' },
+      { name: 'description', content: `Calendrier des entraînements du HBSME : horaires et lieux pour toutes les catégories à Saint-Médard d'Eyrans, Cadaujac et La Brède.` },
+      { property: 'og:title', content: 'Entraînements — HBSME' },
+      { property: 'og:description', content: `Horaires et lieux des entraînements pour toutes les équipes du HBSME.` },
+      { property: 'og:url', content: 'https://hbsme.fr/entrainements' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/entrainements' }],
+  }),
   component: EntrainementsPage,
 })
 

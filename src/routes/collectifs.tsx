@@ -2,6 +2,20 @@ import { createFileRoute } from '@tanstack/react-router'
 import { getCollectifs } from '../server/queries'
 
 export const Route = createFileRoute('/collectifs')({
+  head: () => ({
+    meta: [
+      { title: 'Nos collectifs 2025/2026 — HBSME' },
+      { name: 'description', content: `Découvrez toutes les équipes du HBSME, de l'U7 aux Seniors. Horaires, entraîneurs et informations pour chaque catégorie.` },
+      { property: 'og:title', content: 'Nos collectifs 2025/2026 — HBSME' },
+      { property: 'og:description', content: `Les équipes du HBSME de l'U7 aux Seniors.` },
+      { property: 'og:url', content: 'https://hbsme.fr/collectifs' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/collectifs' }],
+  }),
   loader: () => getCollectifs(),
   component: CollectifsPage,
 })

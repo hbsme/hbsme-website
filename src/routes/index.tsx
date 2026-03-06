@@ -12,6 +12,20 @@ import {
 } from '../server/queries'
 
 export const Route = createFileRoute('/')({
+  head: () => ({
+    meta: [
+      { title: "HBSME — Handball Saint-Médard d'Eyrans" },
+      { name: 'description', content: `Club de handball de Saint-Médard d'Eyrans (Gironde). Résultats, prochains matchs, classements et actualités de toutes nos équipes.` },
+      { property: 'og:title', content: "HBSME — Handball Saint-Médard d'Eyrans" },
+      { property: 'og:description', content: `Club de handball de Saint-Médard d'Eyrans. Résultats, matchs et classements.` },
+      { property: 'og:url', content: 'https://hbsme.fr/' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/' }],
+  }),
   component: Home,
   loader: async () => {
     const [upcoming, results, teamOverview, birthdays, weekendNews, partenaires] =

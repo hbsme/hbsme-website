@@ -2,6 +2,20 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { getMembresCa } from '../server/queries'
 
 export const Route = createFileRoute('/conseil-administration')({
+  head: () => ({
+    meta: [
+      { title: "Conseil d'administration — HBSME" },
+      { name: 'description', content: `Découvrez l'équipe dirigeante du HBSME : bureau et membres du conseil d'administration du club de handball.` },
+      { property: 'og:title', content: "Conseil d'administration — HBSME" },
+      { property: 'og:description', content: `Découvrez l'équipe dirigeante du HBSME.` },
+      { property: 'og:url', content: 'https://hbsme.fr/conseil-administration' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/conseil-administration' }],
+  }),
   component: ConseilAdministrationPage,
   loader: async () => {
     const membres = await getMembresCa()

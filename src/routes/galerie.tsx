@@ -5,6 +5,20 @@ import 'yet-another-react-lightbox/styles.css'
 import { getGalleryPhotos } from '../server/queries'
 
 export const Route = createFileRoute('/galerie')({
+  head: () => ({
+    meta: [
+      { title: 'Galerie photos — HBSME' },
+      { name: 'description', content: '776 photos du club HBSME : matchs, tournois et moments de vie du club depuis 2014.' },
+      { property: 'og:title', content: 'Galerie photos — HBSME' },
+      { property: 'og:description', content: '776 photos du club HBSME depuis 2014.' },
+      { property: 'og:url', content: 'https://hbsme.fr/galerie' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/galerie' }],
+  }),
   loader: () => getGalleryPhotos(),
   component: GaleriePage,
 })

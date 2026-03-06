@@ -1,6 +1,20 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/charte')({
+  head: () => ({
+    meta: [
+      { title: 'Charte du club — HBSME' },
+      { name: 'description', content: `La charte du Handball Saint-Médard d'Eyrans : valeurs et engagements des joueurs, parents et entraîneurs.` },
+      { property: 'og:title', content: 'Charte du club — HBSME' },
+      { property: 'og:description', content: `Valeurs et engagements des joueurs, parents et entraîneurs du HBSME.` },
+      { property: 'og:url', content: 'https://hbsme.fr/charte' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/charte' }],
+  }),
   component: ChartePage,
 })
 

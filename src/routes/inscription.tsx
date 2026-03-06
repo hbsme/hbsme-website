@@ -3,6 +3,20 @@ import { useRef, useEffect, useState } from 'react'
 import { submitInscription } from '../server/inscription'
 
 export const Route = createFileRoute('/inscription')({
+  head: () => ({
+    meta: [
+      { title: 'Inscription — HBSME' },
+      { name: 'description', content: `Inscrivez-vous au club de handball de Saint-Médard d'Eyrans pour la saison 2025/2026. Formulaire en ligne pour tous les âges.` },
+      { property: 'og:title', content: 'Inscription — HBSME' },
+      { property: 'og:description', content: `Inscription au club de handball HBSME pour la saison 2025/2026.` },
+      { property: 'og:url', content: 'https://hbsme.fr/inscription' },
+      { property: 'og:image', content: 'https://hbsme.fr/logo-hbsme.png' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'fr_FR' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [{ rel: 'canonical', href: 'https://hbsme.fr/inscription' }],
+  }),
   component: InscriptionPage,
 })
 
