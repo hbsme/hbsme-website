@@ -241,26 +241,6 @@ function InscriptionPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Header sticky */}
-      <header className="sticky top-0 z-50 bg-gradient-to-b from-white/95 to-white/80 backdrop-blur border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2.5 shrink-0">
-            <img src={CLUB_LOGO} alt="Logo HBSME" className="w-9 h-9 object-contain" />
-            <div>
-              <p className="font-black text-gray-900 leading-tight">HBSME</p>
-              <p className="text-xs text-gray-400">Saint-Médard d'Eyrans</p>
-            </div>
-          </Link>
-          <nav className="flex items-center gap-6 ml-auto text-sm font-semibold text-gray-500">
-            <Link to="/" className="hover:text-pink-800 transition-colors">Accueil</Link>
-            <Link to="/partenaires" className="hover:text-pink-800 transition-colors">Partenaires</Link>
-            <Link to="/conseil-administration" className="hover:text-pink-800 transition-colors">Le Club</Link>
-            <Link to="/collectifs" className="hover:text-pink-600 transition-colors">Collectifs</Link>
-            <Link to="/inscription" className="text-pink-700 hover:text-pink-900 transition-colors">Inscription</Link>
-          </nav>
-        </div>
-      </header>
-
       <main className="max-w-3xl mx-auto px-4 pt-10 pb-20">
 
         {/* Titre */}

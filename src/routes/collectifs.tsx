@@ -24,25 +24,6 @@ function CollectifsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header sticky */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3">
-            <img src="/logo-hbsme.png" alt="Logo HBSME" className="h-10 w-auto" />
-            <div className="leading-tight">
-              <p className="font-bold text-gray-800 text-sm">HBSME</p>
-              <p className="text-xs text-gray-500">Saint-Médard d'Eyrans</p>
-            </div>
-          </a>
-          <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-600">
-            <a href="/" className="hover:text-pink-600 transition-colors">Accueil</a>
-            <a href="/collectifs" className="text-pink-600">Collectifs</a>
-            <a href="/partenaires" className="hover:text-pink-600 transition-colors">Partenaires</a>
-            <a href="/conseil-administration" className="hover:text-pink-600 transition-colors">Le Club</a>
-            <a href="/inscription" className="hover:text-pink-600 transition-colors">Inscription</a>
-          </nav>
-        </div>
-      </header>
 
       <main className="max-w-6xl mx-auto px-4 py-10">
         {/* Titre */}
