@@ -138,16 +138,32 @@ function InscriptionPage() {
   const [resultFilename, setResultFilename] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
 
-  // ── Init signature_pad ──
+  // ── Init signature_pad + resize ──
   useEffect(() => {
     let pad: unknown = null
     let cancelled = false
+
+    function resizeCanvas() {
+      const canvas = canvasRef.current
+      if (!canvas || !sigPadRef.current) return
+      const ratio = Math.max(window.devicePixelRatio || 1, 1)
+      const data = (sigPadRef.current as any).toData()
+      canvas.width = canvas.offsetWidth * ratio
+      canvas.height = canvas.offsetHeight * ratio
+      canvas.getContext('2d')?.scale(ratio, ratio)
+      ;(sigPadRef.current as any).fromData(data)
+    }
 
     async function initPad() {
       if (!canvasRef.current) return
       const { default: SignaturePad } = await import('signature_pad')
       if (cancelled) return
-      pad = new SignaturePad(canvasRef.current, {
+      const canvas = canvasRef.current
+      const ratio = Math.max(window.devicePixelRatio || 1, 1)
+      canvas.width = canvas.offsetWidth * ratio
+      canvas.height = canvas.offsetHeight * ratio
+      canvas.getContext('2d')?.scale(ratio, ratio)
+      pad = new SignaturePad(canvas, {
         backgroundColor: 'rgb(255,255,255)',
         penColor: 'rgb(30,30,30)',
       })
@@ -155,7 +171,11 @@ function InscriptionPage() {
     }
 
     initPad()
-    return () => { cancelled = true }
+    window.addEventListener('resize', resizeCanvas)
+    return () => {
+      cancelled = true
+      window.removeEventListener('resize', resizeCanvas)
+    }
   }, [])
 
   // ── Clear canvas ──
@@ -449,10 +469,8 @@ function InscriptionPage() {
             <div className="border-2 border-dashed border-gray-200 rounded-xl overflow-hidden bg-white">
               <canvas
                 ref={canvasRef}
-                width={580}
-                height={160}
-                className="w-full touch-none"
-                style={{ maxWidth: '100%', display: 'block' }}
+                className="w-full touch-none block"
+                style={{ height: '160px' }}
               />
             </div>
             <button
