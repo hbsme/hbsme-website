@@ -37,9 +37,9 @@ export const Route = createRootRoute({
           image: 'https://handball-saint-medard-deyrans.fr/logo-hbsme.png',
           address: {
             '@type': 'PostalAddress',
-            streetAddress: 'Salle Jean-Marie Lesca',
+            streetAddress: 'Complexe Sportif de la Bugonne, 6 avenue de Canterane',
             addressLocality: 'Saint-Médard d\'Eyrans',
-            postalCode: '33160',
+            postalCode: '33650',
             addressCountry: 'FR',
           },
           sameAs: [
@@ -113,8 +113,9 @@ function SiteFooter() {
               </a>
             </div>
             <p className="text-sm text-gray-500">
-              Salle Jean-Marie Lesca<br />
-              33160 Saint-Médard d'Eyrans
+              Complexe Sportif de la Bugonne<br />
+              6 avenue de Canterane<br />
+              33650 Saint-Médard d'Eyrans
             </p>
           </div>
         </div>

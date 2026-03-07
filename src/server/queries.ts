@@ -290,7 +290,7 @@ export const getCollectifs = createServerFn().handler(() =>
         coachs: [],
       })
     }
-    if (row.coachNom) {
+    if (row.coachPrenom) {
       map.get(row.id)!.coachs.push({
         prenom: row.coachPrenom!, nom: row.coachNom,
         photo: row.coachPhoto, role: row.coachRole,
