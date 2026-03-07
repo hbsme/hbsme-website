@@ -324,3 +324,154 @@ export const getGalleryPhotos = createServerFn().handler(() =>
   }))
 }, TTL.STATIC)
 )
+
+// ─── Studio helpers ───────────────────────────────────────────────────────────
+
+function studioNormalizeTeam(name: string): string {
+  name = name.replace("HANDBALL SAINT MEDARD D'EYRANS", 'HBSME')
+  if (name.startsWith('HBSME')) return name
+  return name.split(' ').map(w => {
+    if (w.length > 3) return w[0].toUpperCase() + w.slice(1).toLowerCase()
+    if (w === 'LE') return 'le'
+    if (w === 'LA') return 'la'
+    if (w === 'DE') return 'de'
+    if (w === 'ST') return 'St'
+    return w
+  }).join(' ')
+}
+
+function studioNormalizeComp(name: string): string {
+  name = name.replace('GIRONDE_U18 FEMININES', '18F').replace('GIRONDE_U18 FEMININE', '18F')
+  name = name.replace('GIRONDE_U15 FEMININES', '15F').replace('GIRONDE_U15 FEMININE', '15F')
+  name = name.replace('GIRONDE_U13 FEMININES', '13F').replace('GIRONDE_U13 FEMININE', '13F')
+  name = name.replace('GIRONDE_U11 FEMININES', '11F').replace('GIRONDE_U11 FEMININE', '11F')
+  name = name.replaceAll('GIRONDE_U18 MASCULINS', '18G').replaceAll('GIRONDE_U18 MASCULIN', '18G')
+  name = name.replaceAll('GIRONDE_U15 MASCULINS', '15G').replaceAll('GIRONDE_U15 MASCULIN', '15G')
+  name = name.replaceAll('GIRONDE_U13 MASCULINS', '13G').replaceAll('GIRONDE_U13 MASCULIN', '13G')
+  name = name.replace('GIRONDE_U11 MASCULINS', '11G').replace('GIRONDE_U11 MASCULIN', '11G')
+  name = name.replaceAll(/.*GIRONDE_\+16 MASCULIN.*/ig, 'SG')
+  name = name.replaceAll(/.*GIRONDE_\+16 FEMININ.*/ig, 'SF')
+  return name.split(' ').map(w => w.length > 3 ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w).join(' ')
+}
+
+// ─── Studio types ─────────────────────────────────────────────────────────────
+
+export interface StudioMatch {
+  id: number; matchId: number; competitionId: number | null; teamId: number | null
+  date: string; competition: string; team1: string; team2: string
+  score1: string | null; score2: string | null; logo1: string | null; logo2: string | null
+}
+
+export interface StudioNextWeek {
+  status: string; date: string
+  next_sat: { date: string; home: StudioMatch[]; ext: StudioMatch[] }
+  next_sun: { date: string; home_matchs: StudioMatch[]; ext_matchs: StudioMatch[] }
+}
+
+export interface StudioLastWeek {
+  status: string; date: string
+  sat: { date: string; matches: StudioMatch[] }
+  sun: { date: string; matches: StudioMatch[] }
+}
+
+function toStudioMatch(row: typeof ffhbMatch.$inferSelect): StudioMatch {
+  return {
+    id: row.id, matchId: row.matchId, competitionId: row.competitionId, teamId: row.teamId,
+    date: row.date ? row.date.toISOString() : '',
+    competition: studioNormalizeComp(row.competition),
+    team1: studioNormalizeTeam(row.team1),
+    team2: studioNormalizeTeam(row.team2),
+    score1: row.score1, score2: row.score2, logo1: row.logo1, logo2: row.logo2,
+  }
+}
+
+async function loadMatchesOfDay(day: Date): Promise<StudioMatch[]> {
+  const start = new Date(day); start.setHours(0, 0, 0, 0)
+  const end = new Date(day); end.setHours(23, 59, 59, 999)
+  const rows = await db.select().from(ffhbMatch)
+    .where(and(
+      isNotNull(ffhbMatch.date),
+      sql`${ffhbMatch.date} >= ${start}`,
+      sql`${ffhbMatch.date} <= ${end}`,
+    ))
+    .orderBy(asc(ffhbMatch.date))
+  return rows.map(toStudioMatch)
+}
+
+export const getNextWeekMatches = createServerFn()
+  .inputValidator((d: unknown) => d as string)
+  .handler(async (ctx): Promise<StudioNextWeek> => {
+    const today = ctx.data
+    const d = new Date(today)
+    const dow = d.getDay()
+    let offset = 0
+    switch (dow) {
+      case 0: offset = -1; break
+      case 1: offset = 5; break
+      case 2: offset = 4; break
+      case 3: offset = 3; break
+      case 4: offset = 2; break
+      case 5: offset = 1; break
+      case 6: offset = 0; break
+    }
+    const sat = new Date(d); sat.setDate(d.getDate() + offset)
+    const sun = new Date(d); sun.setDate(d.getDate() + offset + 1)
+    const satStr = sat.toISOString().split('T')[0]
+    const sunStr = sun.toISOString().split('T')[0]
+    const [satMatches, sunMatches] = await Promise.all([
+      loadMatchesOfDay(sat),
+      loadMatchesOfDay(sun),
+    ])
+    return {
+      status: 'OK', date: today,
+      next_sat: {
+        date: satStr,
+        home: satMatches.filter(m => m.team1.includes('HBSME')),
+        ext: satMatches.filter(m => !m.team1.includes('HBSME')),
+      },
+      next_sun: {
+        date: sunStr,
+        home_matchs: sunMatches.filter(m => m.team1.includes('HBSME')),
+        ext_matchs: sunMatches.filter(m => !m.team1.includes('HBSME')),
+      },
+    }
+  })
+
+export const getLastWeekResults = createServerFn()
+  .inputValidator((d: unknown) => d as string)
+  .handler(async (ctx): Promise<StudioLastWeek> => {
+    const today = ctx.data
+    const d = new Date(today)
+    const dow = d.getDay()
+    let satOffset = 0
+    switch (dow) {
+      case 0: satOffset = -1; break
+      case 1: satOffset = -6; break
+      case 2: satOffset = -7; break
+      case 3: satOffset = -8; break
+      case 4: satOffset = -9; break
+      case 5: satOffset = -10; break
+      case 6: satOffset = 0; break
+    }
+    const sat = new Date(d); sat.setDate(d.getDate() + satOffset)
+    const sun = new Date(d); sun.setDate(d.getDate() + satOffset + 1)
+    const satStr = sat.toISOString().split('T')[0]
+    const sunStr = sun.toISOString().split('T')[0]
+    const [satMatches, sunMatches] = await Promise.all([
+      loadMatchesOfDay(sat),
+      loadMatchesOfDay(sun),
+    ])
+    return {
+      status: 'ok', date: today,
+      sat: { date: satStr, matches: satMatches },
+      sun: { date: sunStr, matches: sunMatches },
+    }
+  })
+
+export const getPhotosRs = createServerFn().handler(async (): Promise<string[]> => {
+  const { readdir } = await import('fs/promises')
+  try {
+    const files = await readdir('/home/hbsme/photo_rs')
+    return files.filter(f => f.endsWith('.jpg') || f.endsWith('.png')).sort()
+  } catch { return [] }
+})

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PartenairesRouteImport } from './routes/partenaires'
+import { Route as IntranetRouteImport } from './routes/intranet'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as GalerieRouteImport } from './routes/galerie'
 import { Route as EntrainementsRouteImport } from './routes/entrainements'
@@ -18,10 +19,17 @@ import { Route as CollectifsRouteImport } from './routes/collectifs'
 import { Route as CharteRouteImport } from './routes/charte'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IntranetIndexRouteImport } from './routes/intranet/index'
+import { Route as IntranetStudioRouteImport } from './routes/intranet/studio'
 
 const PartenairesRoute = PartenairesRouteImport.update({
   id: '/partenaires',
   path: '/partenaires',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntranetRoute = IntranetRouteImport.update({
+  id: '/intranet',
+  path: '/intranet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InscriptionRoute = InscriptionRouteImport.update({
@@ -64,6 +72,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntranetIndexRoute = IntranetIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IntranetRoute,
+} as any)
+const IntranetStudioRoute = IntranetStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => IntranetRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -74,7 +92,10 @@ export interface FileRoutesByFullPath {
   '/entrainements': typeof EntrainementsRoute
   '/galerie': typeof GalerieRoute
   '/inscription': typeof InscriptionRoute
+  '/intranet': typeof IntranetRouteWithChildren
   '/partenaires': typeof PartenairesRoute
+  '/intranet/studio': typeof IntranetStudioRoute
+  '/intranet/': typeof IntranetIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +107,8 @@ export interface FileRoutesByTo {
   '/galerie': typeof GalerieRoute
   '/inscription': typeof InscriptionRoute
   '/partenaires': typeof PartenairesRoute
+  '/intranet/studio': typeof IntranetStudioRoute
+  '/intranet': typeof IntranetIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,7 +120,10 @@ export interface FileRoutesById {
   '/entrainements': typeof EntrainementsRoute
   '/galerie': typeof GalerieRoute
   '/inscription': typeof InscriptionRoute
+  '/intranet': typeof IntranetRouteWithChildren
   '/partenaires': typeof PartenairesRoute
+  '/intranet/studio': typeof IntranetStudioRoute
+  '/intranet/': typeof IntranetIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,7 +136,10 @@ export interface FileRouteTypes {
     | '/entrainements'
     | '/galerie'
     | '/inscription'
+    | '/intranet'
     | '/partenaires'
+    | '/intranet/studio'
+    | '/intranet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +151,8 @@ export interface FileRouteTypes {
     | '/galerie'
     | '/inscription'
     | '/partenaires'
+    | '/intranet/studio'
+    | '/intranet'
   id:
     | '__root__'
     | '/'
@@ -132,7 +163,10 @@ export interface FileRouteTypes {
     | '/entrainements'
     | '/galerie'
     | '/inscription'
+    | '/intranet'
     | '/partenaires'
+    | '/intranet/studio'
+    | '/intranet/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,6 +178,7 @@ export interface RootRouteChildren {
   EntrainementsRoute: typeof EntrainementsRoute
   GalerieRoute: typeof GalerieRoute
   InscriptionRoute: typeof InscriptionRoute
+  IntranetRoute: typeof IntranetRouteWithChildren
   PartenairesRoute: typeof PartenairesRoute
 }
 
@@ -154,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/partenaires'
       fullPath: '/partenaires'
       preLoaderRoute: typeof PartenairesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intranet': {
+      id: '/intranet'
+      path: '/intranet'
+      fullPath: '/intranet'
+      preLoaderRoute: typeof IntranetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inscription': {
@@ -212,8 +254,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intranet/': {
+      id: '/intranet/'
+      path: '/'
+      fullPath: '/intranet/'
+      preLoaderRoute: typeof IntranetIndexRouteImport
+      parentRoute: typeof IntranetRoute
+    }
+    '/intranet/studio': {
+      id: '/intranet/studio'
+      path: '/studio'
+      fullPath: '/intranet/studio'
+      preLoaderRoute: typeof IntranetStudioRouteImport
+      parentRoute: typeof IntranetRoute
+    }
   }
 }
+
+interface IntranetRouteChildren {
+  IntranetStudioRoute: typeof IntranetStudioRoute
+  IntranetIndexRoute: typeof IntranetIndexRoute
+}
+
+const IntranetRouteChildren: IntranetRouteChildren = {
+  IntranetStudioRoute: IntranetStudioRoute,
+  IntranetIndexRoute: IntranetIndexRoute,
+}
+
+const IntranetRouteWithChildren = IntranetRoute._addFileChildren(
+  IntranetRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -224,6 +294,7 @@ const rootRouteChildren: RootRouteChildren = {
   EntrainementsRoute: EntrainementsRoute,
   GalerieRoute: GalerieRoute,
   InscriptionRoute: InscriptionRoute,
+  IntranetRoute: IntranetRouteWithChildren,
   PartenairesRoute: PartenairesRoute,
 }
 export const routeTree = rootRouteImport
