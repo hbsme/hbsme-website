@@ -38,20 +38,35 @@ export function isHome(team1: string): boolean {
 export const getUpcomingMatches = createServerFn().handler(() =>
   withCache('upcoming-matches', async () => {
   const now = new Date()
-  const rows = await db
+  // Fin de la semaine courante (dimanche 23:59:59) — on garde les matchs de la semaine
+  // jusqu'au dimanche soir avant de passer à la semaine suivante.
+  const endOfWeek = new Date(now)
+  const dayOfWeek = now.getDay() // 0=dim, 1=lun, ..., 6=sam
+  const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
+  endOfWeek.setDate(endOfWeek.getDate() + daysUntilSunday)
+  endOfWeek.setHours(23, 59, 59, 999)
+
+  const baseWhere = and(
+    isNull(ffhbMatch.score1),
+    isNotNull(ffhbMatch.date),
+    gt(ffhbMatch.date, EPOCH_FILTER),
+    gt(ffhbMatch.date, now),
+  )
+  // Essayer d'abord les matchs de la semaine courante
+  const thisWeek = await db
     .select()
     .from(ffhbMatch)
-    .where(
-      and(
-        isNull(ffhbMatch.score1),
-        isNotNull(ffhbMatch.date),
-        gt(ffhbMatch.date, EPOCH_FILTER),
-        gt(ffhbMatch.date, now),
-      ),
-    )
+    .where(and(baseWhere, sql`${ffhbMatch.date} <= ${endOfWeek}`))
     .orderBy(asc(ffhbMatch.date))
     .limit(8)
-  return rows
+  if (thisWeek.length > 0) return thisWeek
+  // Aucun match cette semaine → afficher la semaine suivante
+  return db
+    .select()
+    .from(ffhbMatch)
+    .where(baseWhere)
+    .orderBy(asc(ffhbMatch.date))
+    .limit(8)
 }, TTL.LIVE)
 )
 
