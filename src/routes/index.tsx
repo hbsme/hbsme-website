@@ -629,8 +629,12 @@ function Home() {
       {/* Header */}
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-white via-white to-pink-50 border-b border-pink-100 pb-10">
-        <div className="max-w-6xl mx-auto px-4 pt-16 flex flex-col md:flex-row items-center gap-10">
+      <section className="bg-gradient-to-br from-white via-white to-pink-50 border-b border-pink-100 pb-10 relative overflow-hidden">
+        {/* Joueur handball — silhouette de fond */}
+          <div className="absolute left-[25%] top-0 bottom-0 flex items-center md:translate-y-[20%] opacity-[0.08] pointer-events-none select-none" aria-hidden="true">
+            <img src="/handball-player.png" alt="" className="h-full max-h-[288px] object-contain"/>
+          </div>
+          <div className="max-w-6xl mx-auto px-4 pt-16 flex flex-col md:flex-row items-center gap-10 relative z-10">
           <div className="flex-1">
             <p className="text-pink-700 text-sm font-bold tracking-widest uppercase mb-3">
               Handball Club · Gironde
