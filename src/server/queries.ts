@@ -471,7 +471,7 @@ export const getLastWeekResults = createServerFn()
 export const getPhotosRs = createServerFn().handler(async (): Promise<string[]> => {
   const { readdir } = await import('fs/promises')
   try {
-    const files = await readdir('/home/hbsme/photo_rs')
+    const files = await readdir('/home/hbsme/scores_photos')
     return files.filter(f => f.endsWith('.jpg') || f.endsWith('.png')).sort()
   } catch { return [] }
 })
