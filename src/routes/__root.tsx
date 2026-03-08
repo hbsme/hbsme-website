@@ -148,10 +148,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans antialiased">
         {children}
-        <TanStackDevtools
+        {process.env.NODE_ENV === 'development' && <TanStackDevtools
           config={{ position: 'bottom-right' }}
           plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
-        />
+        />}
         <Scripts />
       </body>
     </html>
