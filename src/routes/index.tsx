@@ -663,15 +663,15 @@ function Home() {
         </div>
       </section>
 
-      <main className="max-w-6xl mx-auto px-4 pt-10 pb-16 space-y-20">
-
-        {/* Actu du week-end + card anniversaire côte à côte */}
-        <section id="weekend" className="pb-20 border-b border-gray-200">
+      {/* ── Actu du week-end ─────────────────────────────────────── */}
+      <section id="weekend" className="bg-white py-16">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start">
 
             {/* Actu — prend tout l'espace disponible */}
             <div className="flex-1 min-w-0">
               <div className="mb-6">
+                <p className="text-xs font-bold tracking-widest uppercase text-pink-600 mb-2">Ce week-end</p>
                 <div className="flex items-center gap-3 mb-1">
                   <h2 className="text-2xl font-black text-gray-900">Actu du week-end</h2>
                   <span className="text-xs text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white">
@@ -708,10 +708,13 @@ function Home() {
             </div>
 
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Résultats récents */}
-        <section id="resultats">
+      {/* ── Résultats récents ─────────────────────────────────────── */}
+      <section id="resultats" className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="text-xs font-bold tracking-widest uppercase text-pink-600 mb-2">Résultats</p>
           <h2 className="text-2xl font-black text-gray-900 mb-6">Derniers résultats</h2>
           {sortedResults.length === 0 ? (
             <p className="text-gray-400">Aucun résultat disponible.</p>
@@ -720,10 +723,13 @@ function Home() {
               {sortedResults.map((m) => <MatchCard key={m.id} match={m} variant="result" />)}
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        {/* Prochains matchs */}
-        <section id="matchs">
+      {/* ── Prochains matchs ──────────────────────────────────────── */}
+      <section id="matchs" className="bg-white py-16 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="text-xs font-bold tracking-widest uppercase text-pink-600 mb-2">Programme</p>
           <div className="mb-6">
             <h2 className="text-2xl font-black text-gray-900 mb-1">Prochains matchs</h2>
             <p className="text-sm text-gray-400 capitalize mb-2">{upcomingLabel}</p>
@@ -734,16 +740,18 @@ function Home() {
           ) : (
             <UpcomingMatchGroups matches={sortedUpcoming} />
           )}
-        </section>
+        </div>
+      </section>
 
-        {/* Classements */}
-        <section id="classements">
+      {/* ── Classements ───────────────────────────────────────────── */}
+      <section id="classements" className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="text-xs font-bold tracking-widest uppercase text-pink-600 mb-2">Classements</p>
           <h2 className="text-2xl font-black text-gray-900 mb-2">Nos équipes</h2>
           <p className="text-gray-500 mb-6 max-w-2xl">Découvrez le classement actuel de chacun de nos collectifs en compétition cette saison.</p>
           <TeamsOverview teams={teamOverview} />
-        </section>
-
-      </main>
+        </div>
+      </section>
 
       {/* Galerie photo — strip défilant */}
       <section className="py-12 overflow-hidden bg-gray-50 border-t border-gray-100">
