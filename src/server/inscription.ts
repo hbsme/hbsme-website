@@ -68,10 +68,33 @@ export const submitInscription = createServerFn({ method: 'POST' })
       y -= LINE_HEIGHT * 1.5
       page.drawLine({ start: { x: MARGIN, y }, end: { x: width - MARGIN, y }, thickness: 1, color: PINK })
       y -= LINE_HEIGHT
+      const VALUE_X = MARGIN + 180
+      const VALUE_MAX_W = 595 - MARGIN - VALUE_X // ~315px
       for (const [label, value] of rows) {
         if (y < MARGIN + LINE_HEIGHT * 2) break
-        page.drawText(label + " :", { x: MARGIN, y, size: 10, font: boldFont, color: GRAY })
-        page.drawText((value || "-").substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
+        // Wrap value (handles newlines + long strings)
+        const valLines: string[] = []
+        for (const part of (value || '-').split('\n')) {
+          const words = part.split(' ')
+          let cur = ''
+          for (const w of words) {
+            const test = cur ? `${cur} ${w}` : w
+            if (font.widthOfTextAtSize(test, 10) > VALUE_MAX_W && cur) {
+              valLines.push(cur); cur = w
+            } else { cur = test }
+          }
+          valLines.push(cur || '')
+        }
+        page.drawText(label + ' :', { x: MARGIN, y, size: 10, font: boldFont, color: GRAY })
+        for (let i = 0; i < valLines.length; i++) {
+          if (i === 0) {
+            page.drawText(valLines[0] || '-', { x: VALUE_X, y, size: 10, font, color: DARK })
+          } else {
+            y -= LINE_HEIGHT
+            if (y < MARGIN + LINE_HEIGHT) break
+            page.drawText(valLines[i], { x: VALUE_X, y, size: 10, font, color: DARK })
+          }
+        }
         y -= LINE_HEIGHT
       }
       return page
@@ -96,82 +119,167 @@ export const submitInscription = createServerFn({ method: 'POST' })
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-    // Page 1 : Licencié
-    await drawTablePage(pdfDoc, 'HBSME Inscription : Info Licencié', [
-      ['Nom', licencie.nom],
-      ['Prénom', licencie.prenom],
-      ['Sexe', licencie.sexe === 'M' ? 'Masculin' : 'Féminin'],
-      ['Mineur', licencie.mineur ? 'Oui' : 'Non'],
-      ['Date de naissance', licencie.dateNaissance],
-      ['Lieu de naissance', licencie.lieuNaissance],
-      ['Adresse', licencie.adresse],
-      ['Tél domicile', licencie.telDomicile],
-      ['Tél portable', licencie.telPortable],
-      ['Email', licencie.email],
-      ['N° Sécurité Sociale', licencie.numSecu],
-    ], font, boldFont)
-
-    // Page 2 : Parents (si mineur)
-    if (licencie.mineur) {
-      const page2 = pdfDoc.addPage([595, 842])
-      const { width, height } = page2.getSize()
-      let y = height - MARGIN
-
-      page2.drawText('HBSME Inscription : Parent 1 & 2', {
-        x: MARGIN,
-        y,
-        size: 16,
-        font: boldFont,
-        color: PINK,
-      })
-      y -= LINE_HEIGHT * 1.5
-      page2.drawLine({ start: { x: MARGIN, y }, end: { x: width - MARGIN, y }, thickness: 1, color: PINK })
-      y -= LINE_HEIGHT
-
-      page2.drawText('Parent 1', { x: MARGIN, y, size: 13, font: boldFont, color: DARK })
-      y -= LINE_HEIGHT
-
-      for (const [label, value] of [
-        ['Nom', parent1.nom],
-        ['Prénom', parent1.prenom],
-        ['Profession', parent1.profession],
-        ['Adresse', parent1.adresse],
-        ['Tél fixe', parent1.telFixe],
-        ['Tél portable', parent1.telPortable],
-        ['Tél travail', parent1.telTravail],
-        ['Email', parent1.email],
-      ] as [string, string][]) {
-        page2.drawText(label + ' :', { x: MARGIN, y, size: 10, font: boldFont, color: GRAY })
-        page2.drawText((value || '-').substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
-        y -= LINE_HEIGHT
+    // Helper : wrap text to fit maxWidth (returns array of lines)
+    function wrapWords(text: string, f: typeof font, size: number, maxW: number): string[] {
+      if (!text || !text.trim()) return ['']
+      const result: string[] = []
+      for (const para of text.split('\n')) {
+        if (!para.trim()) { result.push(''); continue }
+        const words = para.split(' ')
+        let cur = ''
+        for (const w of words) {
+          const test = cur ? `${cur} ${w}` : w
+          if (f.widthOfTextAtSize(test, size) > maxW && cur) {
+            result.push(cur); cur = w
+          } else { cur = test }
+        }
+        if (cur) result.push(cur)
       }
-
-      y -= LINE_HEIGHT
-      page2.drawText('Parent 2', { x: MARGIN, y, size: 13, font: boldFont, color: DARK })
-      y -= LINE_HEIGHT
-
-      for (const [label, value] of [
-        ['Nom', parent2.nom],
-        ['Prénom', parent2.prenom],
-        ['Profession', parent2.profession],
-        ['Adresse', parent2.adresse],
-        ['Tél fixe', parent2.telFixe],
-        ['Tél portable', parent2.telPortable],
-        ['Tél travail', parent2.telTravail],
-        ['Email', parent2.email],
-      ] as [string, string][]) {
-        page2.drawText(label + ' :', { x: MARGIN, y, size: 10, font: boldFont, color: GRAY })
-        page2.drawText((value || '-').substring(0, 80), { x: MARGIN + 180, y, size: 10, font, color: DARK })
-        y -= LINE_HEIGHT
-      }
+      return result
     }
 
-    // Page 3 : Autorisations + signature
+    // Page 1 : Licencié
+    await drawTablePage(pdfDoc, 'HBSME inscription : info licencié', [
+      ['nom du licencié', licencie.nom],
+      ['prénom du licencié', licencie.prenom],
+      ['sexe du licencié', licencie.sexe === 'M' ? 'm' : 'f'],
+      ['date de naissance', licencie.dateNaissance],
+      ['lieu de naissance', licencie.lieuNaissance],
+      ['adresse', licencie.adresse],
+      ['téléphone mobile', licencie.telPortable],
+      ['téléphone fixe', licencie.telDomicile],
+      ['email', licencie.email],
+      ['numéro de sécurité sociale', licencie.numSecu],
+    ], font, boldFont)
+
+    // Page 2 : Parent 1 (toujours présente, même si majeur)
+    await drawTablePage(pdfDoc, 'HBSME inscription : parent 1', [
+      ['nom du parent 1', parent1.nom],
+      ['prénom du parent 1', parent1.prenom],
+      ['travail du parent 1', parent1.profession],
+      ['adresse du parent 1', parent1.adresse],
+      ['téléphone fixe du parent 1', parent1.telFixe],
+      ['téléphone portable du parent 1', parent1.telPortable],
+      ['téléphone au travail du parent 1', parent1.telTravail],
+      ['email du parent 1', parent1.email],
+    ], font, boldFont)
+
+    // Page 3 : Parent 2 (toujours présente)
+    await drawTablePage(pdfDoc, 'HBSME inscription : parent 2', [
+      ['nom du parent 2', parent2.nom],
+      ['prénom du parent 2', parent2.prenom],
+      ['travail du parent 2', parent2.profession],
+      ['adresse du parent 2', parent2.adresse],
+      ['téléphone fixe du parent 2', parent2.telFixe],
+      ['téléphone portable du parent 2', parent2.telPortable],
+      ['téléphone au travail du parent 2', parent2.telTravail],
+      ['email du parent 2', parent2.email],
+    ], font, boldFont)
+
+    // Pages Charte : texte complet, multi-page si nécessaire
+    const CHARTE_LINES = [
+      "Vous avez choisi de participer par votre inscription ou par celle de votre enfant aux activités du club HANDBALL SAINT MEDARD D'EYRANS.",
+      "",
+      "Le club HANDBALL SAINT MEDARD D'EYRANS est en premier lieu une association, c'est-à-dire la réunion de personnes poursuivant un même objectif et s'unissant pour l'atteindre. L'adhésion est un acte volontaire qui implique un engagement à participer et à apporter son concours au fonctionnement et au développement de l'association. L'association de handball est gérée par une équipe de bénévoles qui ne demande qu'à être renforcée.",
+      "",
+      "Ne soyez pas que des consommateurs ! Soyez indulgents !",
+      "",
+      "1. JOUEUR",
+      "",
+      "1.1 L'ESPRIT SPORTIF",
+      "- Je respecte les règles du jeu.",
+      "- J'accepte toutes les décisions de l'arbitre sans jamais mettre en doute son intégrité.",
+      "- Je démontre un esprit d'équipe par une collaboration franche avec les coéquipiers et les entraîneurs.",
+      "- J'aide les coéquipiers qui présentent plus de difficultés.",
+      "- Je refuse de gagner par des moyens illégaux et par tricherie.",
+      "- J'accepte les erreurs de mes coéquipiers.",
+      "",
+      "1.2. LE RESPECT",
+      "- Je considère un adversaire sportif comme indispensable pour jouer et non comme un ennemi.",
+      "- J'agis en tout temps avec courtoisie envers les entraîneurs, les officiels, les coéquipiers, les adversaires et les spectateurs.",
+      "- J'utilise un langage précis sans injure.",
+      "- Je suis ponctuel(le) aux entrainements et matches.",
+      "- Je m'entraine dans une tenue adaptée.",
+      "- Je préviens le responsable en cas d'absence ou de maladie.",
+      "- Je suis motivé(e) et participe activement et avec assiduité aux entrainements.",
+      "- Je poursuis mon engagement envers mes coéquipiers, mon entraîneur et mon équipe jusqu'au bout.",
+      "- Je respecte le matériel du club, les gardiens des gymnases et les équipements municipaux mis à disposition par notre ville et lors des déplacements.",
+      "",
+      "1.3. LA DIGNITÉ",
+      "- Je conserve en tout temps mon sang-froid et la maîtrise de mes gestes face aux autres participants.",
+      "- J'accepte la victoire avec modestie sans ridiculiser l'adversaire.",
+      "- J'accepte la défaite en étant satisfait(e) de l'effort accompli dans les limites de mes capacités.",
+      "- J'accepte la défaite en reconnaissant également le bon travail accompli par l'adversaire.",
+      "",
+      "1.4. LE PLAISIR",
+      "- Je joue pour m'amuser.",
+      "- Je considère la victoire et la défaite comme une conséquence du plaisir de jouer.",
+      "- Je considère le dépassement personnel plus important que l'obtention d'une médaille ou d'un trophée.",
+      "",
+      "1.5. L'HONNEUR",
+      "- Je me représente d'abord en tant qu'être humain.",
+      "- Je suis loyal dans le sport et dans la vie.",
+      "- Je représente aussi mon équipe, mon association sportive et ma ville.",
+      "- Je véhicule les valeurs de mon sport par chacun de mes comportements.",
+      "- Je suis l'ambassadeur des valeurs du handball.",
+      "",
+      "2. LES PARENTS",
+      "",
+      "- Inscrire un enfant à une activité ne signifie pas se dégager de toute responsabilité. Les enfants ne dépendent des entraîneurs que pour la durée de leur séance. Assurez-vous de la présence de l'entraîneur à l'arrivée de l'enfant.",
+      "- Nous vous demandons de répondre favorablement aux convocations données par l'entraîneur de votre enfant. Prévenez l'entraîneur en cas d'absence à un match.",
+      "- Afin d'organiser au mieux les déplacements lors des matchs à l'extérieur, nous comptons sur votre participation pour accompagner les joueurs.",
+      "- Le lavage du jeu de maillots sera également assuré à tour de rôle par les familles.",
+      "- En cas de problème, n'hésitez pas à contacter l'entraîneur ou un membre du bureau.",
+      "",
+      "3. L'ENTRAINEUR",
+      "",
+      "- Il permet aux joueurs de pratiquer le handball dans un esprit sportif, en respectant les équipiers, les adversaires, les arbitres et les responsables du club.",
+      "- Il donne à chaque joueur le calendrier des matchs, le listing des joueurs avec les numéros de téléphone.",
+      "- Il rencontre les parents, les met en relation, les réunit au minimum une fois en début de saison (présentation de chacun, remise des calendriers de matchs, organisation des déplacements, des lavages de maillots...).",
+      "- A tout moment, il doit encourager les joueurs à prendre des initiatives en arbitrage et en encadrement. Il doit les sensibiliser à l'importance du rôle de chacun dans la vie du club.",
+      "",
+      "[X] Accepte la charte du club Handball Saint-Médard d'Eyrans",
+    ]
+
+    const TEXT_SIZE = 10
+    const TEXT_MAX_W = 495 // 595 - 2*MARGIN
+    const MIN_Y = MARGIN + LINE_HEIGHT * 2
+
+    // Expand charte lines with word-wrap
+    const expandedCharte: string[] = []
+    for (const line of CHARTE_LINES) {
+      const wrapped = wrapWords(line, font, TEXT_SIZE, TEXT_MAX_W)
+      for (const wl of wrapped) expandedCharte.push(wl)
+    }
+
+    // Draw charte over one or more pages
+    let chartePage = pdfDoc.addPage([595, 842])
+    let charteY = chartePage.getSize().height - MARGIN
+    chartePage.drawText('HBSME charte du club', { x: MARGIN, y: charteY, size: 16, font: boldFont, color: PINK })
+    charteY -= LINE_HEIGHT * 1.5
+    chartePage.drawLine({ start: { x: MARGIN, y: charteY }, end: { x: 595 - MARGIN, y: charteY }, thickness: 1, color: PINK })
+    charteY -= LINE_HEIGHT
+
+    for (const line of expandedCharte) {
+      if (charteY < MIN_Y) {
+        chartePage = pdfDoc.addPage([595, 842])
+        charteY = chartePage.getSize().height - MARGIN
+        chartePage.drawText('HBSME charte du club (suite)', { x: MARGIN, y: charteY, size: 16, font: boldFont, color: PINK })
+        charteY -= LINE_HEIGHT * 1.5
+        chartePage.drawLine({ start: { x: MARGIN, y: charteY }, end: { x: 595 - MARGIN, y: charteY }, thickness: 1, color: PINK })
+        charteY -= LINE_HEIGHT
+      }
+      if (!line.trim()) { charteY -= LINE_HEIGHT * 0.5; continue }
+      chartePage.drawText(line.substring(0, 100), { x: MARGIN, y: charteY, size: TEXT_SIZE, font, color: DARK })
+      charteY -= LINE_HEIGHT
+    }
+
+    // Dernière page : Autorisations + signature
     const page3 = pdfDoc.addPage([595, 842])
     const { width: w3, height: h3 } = page3.getSize()
     let y3 = h3 - MARGIN
 
-    page3.drawText('HBSME Inscription : Autorisations', {
+    page3.drawText('HBSME inscription : autorisation', {
       x: MARGIN,
       y: y3,
       size: 16,
@@ -182,35 +290,40 @@ export const submitInscription = createServerFn({ method: 'POST' })
     page3.drawLine({ start: { x: MARGIN, y: y3 }, end: { x: w3 - MARGIN, y: y3 }, thickness: 1, color: PINK })
     y3 -= LINE_HEIGHT
 
+    const AUTH_VALUE_X = MARGIN + 180
+    const AUTH_VALUE_MAX_W = 595 - MARGIN - AUTH_VALUE_X
     for (const [label, value] of [
-      ['Je soussigné(e)', autorisation.authName],
-      ['Représentant légal de', autorisation.authChild],
-      ['Catégorie', autorisation.authCat],
+      ['Je soussigné(e), M., Mme.', autorisation.authName],
+      ['représentant légal de', autorisation.authChild],
+      ['catégorie', autorisation.authCat],
+      ['allergies / contre-indications', autorisation.allergies],
     ] as [string, string][]) {
+      const valLines = wrapWords(value || '-', font, 10, AUTH_VALUE_MAX_W)
       page3.drawText(label + ' :', { x: MARGIN, y: y3, size: 10, font: boldFont, color: GRAY })
-      page3.drawText((value || '-').substring(0, 80), { x: MARGIN + 180, y: y3, size: 10, font, color: DARK })
+      for (let i = 0; i < valLines.length; i++) {
+        if (i === 0) {
+          page3.drawText(valLines[0], { x: AUTH_VALUE_X, y: y3, size: 10, font, color: DARK })
+        } else {
+          y3 -= LINE_HEIGHT
+          page3.drawText(valLines[i], { x: AUTH_VALUE_X, y: y3, size: 10, font, color: DARK })
+        }
+      }
       y3 -= LINE_HEIGHT
     }
 
     y3 -= LINE_HEIGHT / 2
-    page3.drawText('Autorisations accordées :', { x: MARGIN, y: y3, size: 11, font: boldFont, color: DARK })
-    y3 -= LINE_HEIGHT
-
-    for (const txt of [
-      '[OK] Transport : autorisation d\'utiliser les transports en commun ou véhicules de bénévoles',
-      '[OK] Médical : autorisation d\'intervention médicale en cas d\'urgence',
-      '[OK] Hospitalisation : autorisation de fin d\'hospitalisation',
-    ]) {
-      page3.drawText(txt.substring(0, 85), { x: MARGIN, y: y3, size: 9, font, color: DARK })
-      y3 -= LINE_HEIGHT
-    }
-
-    if (autorisation.allergies) {
-      y3 -= LINE_HEIGHT / 2
-      page3.drawText('Allergies / Contre-indications :', { x: MARGIN, y: y3, size: 10, font: boldFont, color: GRAY })
-      y3 -= LINE_HEIGHT
-      page3.drawText(autorisation.allergies.substring(0, 100), { x: MARGIN, y: y3, size: 9, font, color: DARK })
-      y3 -= LINE_HEIGHT
+    const AUTH_PARAGRAPHS = [
+      "Autorise les entraineurs du HANDBALL SAINT MEDARD D'EYRANS ou les parents bénévoles à transporter mon enfant lors des compétitions sportives. Je déclare décharger le HANDBALL SAINT MEDARD D'EYRANS de toute responsabilité concernant le transport de mon enfant.",
+      "Autorise le Club à prendre toutes les dispositions médicales, thérapeutiques ou chirurgicales nécessaires, y compris l'anesthésie, en cas d'accident au cours de l'activité pratiquée au HANDBALL SAINT MEDARD D'EYRANS.",
+      "En fin d'hospitalisation, j'autorise mon fils / ma fille à partir avec le représentant du HANDBALL SAINT MEDARD D'EYRANS.",
+    ]
+    for (const para of AUTH_PARAGRAPHS) {
+      const wrappedAuth = wrapWords(para, font, 9, TEXT_MAX_W)
+      for (const wl of wrappedAuth) {
+        page3.drawText(wl, { x: MARGIN, y: y3, size: 9, font, color: DARK })
+        y3 -= LINE_HEIGHT * 0.95
+      }
+      y3 -= LINE_HEIGHT * 0.5
     }
 
     y3 -= LINE_HEIGHT / 2
@@ -224,7 +337,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
     })
     y3 -= LINE_HEIGHT * 2
 
-    // Embed signature image
+    // Signature
     if (signatureDataUrl && signatureDataUrl.startsWith('data:image/png;base64,')) {
       try {
         const base64 = signatureDataUrl.replace('data:image/png;base64,', '')
@@ -245,7 +358,6 @@ export const submitInscription = createServerFn({ method: 'POST' })
         page3.drawText('[Signature non disponible]', { x: MARGIN, y: y3, size: 9, font, color: GRAY })
       }
     }
-
     // Save PDF
     const pdfBytes = await pdfDoc.save()
     const pdfPath = path.default.join(PDF_DIR, `${filename}.pdf`)

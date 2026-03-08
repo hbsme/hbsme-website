@@ -76,7 +76,7 @@ export const inscription = pgTable('inscription', {
   prenom: varchar('prenom', { length: 100 }),
   sexe: varchar('sexe', { length: 1 }),
   mineur: boolean('mineur'),
-  dateNaissance: varchar('date_naissance', { length: 10 }),
+  dateNaissance: date('date_naissance'),
   lieuNaissance: varchar('lieu_naissance', { length: 200 }),
   adresse: text('adresse'),
   telDomicile: varchar('tel_domicile', { length: 20 }),
@@ -108,7 +108,7 @@ export const inscription = pgTable('inscription', {
   allergies: text('allergies'),
   droitImage: boolean('droit_image'),
   faitA: varchar('fait_a', { length: 200 }),
-  faitLe: varchar('fait_le', { length: 10 }),
+  faitLe: date('fait_le'),
 })
 
 export const hbsmeUser = pgTable('hbsme_user', {

@@ -142,7 +142,7 @@ function InscriptionPage() {
 
   const [autorisation, setAutorisation] = useState({
     authName: '', authChild: '', authCat: '',
-    allergies: '', faitA: "Saint-Médard d'Eyrans", faitLe: new Date().toLocaleDateString('fr-FR'),
+    allergies: '', faitA: "Saint-Médard d'Eyrans", faitLe: new Date().toISOString().split('T')[0],
   })
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -329,10 +329,9 @@ function InscriptionPage() {
                 </label>
               </Field>
 
-              <Field label="Date de naissance (JJ/MM/AAAA)" required>
+              <Field label="Date de naissance" required>
                 <input
-                  className={inputClass} placeholder="dd/mm/yyyy"
-                  pattern="\d{2}/\d{2}/\d{4}" required
+                  type="date" className={inputClass} required
                   value={licencie.dateNaissance}
                   onChange={e => setLicencie(l => ({ ...l, dateNaissance: e.target.value }))}
                 />
@@ -471,7 +470,7 @@ function InscriptionPage() {
                   onChange={e => setAutorisation(a => ({ ...a, faitA: e.target.value }))} />
               </Field>
               <Field label="Le">
-                <input type="text" className={inputClass} placeholder="dd/mm/yyyy" value={autorisation.faitLe}
+                <input type="date" className={inputClass} value={autorisation.faitLe}
                   onChange={e => setAutorisation(a => ({ ...a, faitLe: e.target.value }))} />
               </Field>
             </div>
