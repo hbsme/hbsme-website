@@ -324,7 +324,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
 
     // ── Email via Birdie Mail ──────────────────────────────────────────────────
     try {
-      const pdfBase64 = Buffer.from(pdfBytes).toString('base64')
+      const pdfUrl = `https://handball-saint-medard-deyrans.fr/inscription/data/pdf/${filename}.pdf`
       await fetch('https://mx.birdie-mail.com/api/v1/send', {
         method: 'POST',
         headers: {
@@ -335,17 +335,12 @@ export const submitInscription = createServerFn({ method: 'POST' })
           from: 'no-reply@hbsme.fr',
           to: ['christophe.maillot@gmail.com'],
           subject: `Nouvelle inscription : ${licencie.prenom} ${licencie.nom}`,
-          text: `Nouvelle inscription reçue.\n\nNom : ${licencie.nom}\nPrénom : ${licencie.prenom}\nDate de naissance : ${licencie.dateNaissance}\nCatégorie : ${autorisation.authCat || '-'}`,
-          html: `<p>Nouvelle inscription reçue.</p><ul><li><strong>Nom :</strong> ${licencie.nom}</li><li><strong>Prénom :</strong> ${licencie.prenom}</li><li><strong>Date de naissance :</strong> ${licencie.dateNaissance}</li><li><strong>Catégorie :</strong> ${autorisation.authCat || '-'}</li></ul>`,
-          attachments: [{
-            filename: `${filename}.pdf`,
-            content: pdfBase64,
-            content_type: 'application/pdf',
-          }],
+          text: `Nouvelle inscription reçue.\n\nNom : ${licencie.nom}\nPrénom : ${licencie.prenom}\nDate de naissance : ${licencie.dateNaissance}\nCatégorie : ${autorisation.authCat || '-'}\n\nPDF : ${pdfUrl}`,
+          html: `<p>Nouvelle inscription reçue.</p><ul><li><strong>Nom :</strong> ${licencie.nom}</li><li><strong>Prénom :</strong> ${licencie.prenom}</li><li><strong>Date de naissance :</strong> ${licencie.dateNaissance}</li><li><strong>Catégorie :</strong> ${autorisation.authCat || '-'}</li></ul><p><a href="${pdfUrl}" style="background:#e0325a;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold;">Télécharger le PDF</a></p>`,
         }),
       })
-    } catch (_err) {
-      // Non-fatal
+    } catch (err) {
+      console.error('[HBSME] Email send error:', err)
     }
 
     return { success: true, filename }
