@@ -37,8 +37,8 @@ export const Route = createFileRoute('/')({
         getWeekendNews(),
         getPartenaires(),
       ])
-    const { weekendMatches, weekendSummary } = weekendNews
-    return { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, partenaires }
+    const { weekendMatches, weekendSummary, weekendLabel } = weekendNews
+    return { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, weekendLabel, partenaires }
   },
 })
 
@@ -617,7 +617,7 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
 // ─── main page ────────────────────────────────────────────────────────────────
 
 function Home() {
-  const { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, partenaires } = Route.useLoaderData()
+  const { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, weekendLabel, partenaires } = Route.useLoaderData()
 
   const sortedResults = [...results].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
   const sortedUpcoming = [...upcoming].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
@@ -670,17 +670,20 @@ function Home() {
 
             {/* Actu — prend tout l'espace disponible */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-2xl font-black text-gray-900">Actu du week-end</h2>
-                <span className="text-xs text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white">
-                  ✦ Résumé automatique
-                </span>
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-1">
+                  <h2 className="text-2xl font-black text-gray-900">Actu du week-end</h2>
+                  <span className="text-xs text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white">
+                    ✦ Résumé automatique
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400 capitalize">{weekendLabel}</p>
               </div>
               <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
                 <FormattedText text={weekendText} className="text-gray-600 text-base" />
                 {weekendMatches.length > 0 && (
                   <p className="text-xs text-gray-300 mt-4">
-                    Basé sur {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} du week-end.
+                    Basé sur {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} — {weekendLabel}.
                   </p>
                 )}
               </div>

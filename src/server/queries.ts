@@ -140,20 +140,32 @@ export const getUpcomingBirthdays = createServerFn().handler(() =>
 
 export const getWeekendNews = createServerFn().handler(() =>
   withCache('weekend-news', async () => {
-  const lastMonday = sql`(NOW() - (EXTRACT(DOW FROM NOW())::int + 6) * interval '1 day')::date`
+  // Dernier week-end complet (samedi + dimanche)
+  // Si on est dimanche (DOW=0), on recule d'une semaine entière car le dimanche en cours
+  // n'est pas terminé — les matchs du jour n'ont pas encore eu lieu.
+  const nowParis = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
+  const dow = nowParis.getDay() // 0=dim, 1=lun, ..., 6=sam
+  const daysToLastSunday = dow === 0 ? 7 : dow
+  const lastSunday = new Date(nowParis)
+  lastSunday.setDate(nowParis.getDate() - daysToLastSunday)
+  const lastSaturday = new Date(lastSunday)
+  lastSaturday.setDate(lastSunday.getDate() - 1)
+  const nextMonday = new Date(lastSunday)
+  nextMonday.setDate(lastSunday.getDate() + 1)
+  const weekendLabel = `week-end du ${lastSaturday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${lastSunday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`
 
-  // Matchs du week-end
+  // Matchs du week-end précédent (samedi + dimanche)
   const weekendMatches = await db
     .select()
     .from(ffhbMatch)
     .where(and(
       isNotNull(ffhbMatch.score1),
-      sql`${ffhbMatch.date} >= ${lastMonday}`,
-      sql`${ffhbMatch.date} < NOW()`,
+      sql`${ffhbMatch.date}::date >= ${lastSaturday.toISOString().slice(0, 10)}`,
+      sql`${ffhbMatch.date}::date < ${nextMonday.toISOString().slice(0, 10)}`,
     ))
     .orderBy(asc(ffhbMatch.date))
 
-  // Historique 8 semaines pour contexte IA
+  // Historique 8 semaines pour contexte IA (excluant le week-end en cours)
   const allHistory = await db
     .select({ matchId: ffhbMatch.matchId, date: ffhbMatch.date, competition: ffhbMatch.competition,
       team1: ffhbMatch.team1, team2: ffhbMatch.team2, score1: ffhbMatch.score1, score2: ffhbMatch.score2 })
@@ -161,7 +173,7 @@ export const getWeekendNews = createServerFn().handler(() =>
     .where(and(
       isNotNull(ffhbMatch.score1),
       sql`${ffhbMatch.date} >= (NOW() - interval '8 weeks')::date`,
-      sql`${ffhbMatch.date} < NOW()`,
+      sql`${ffhbMatch.date}::date < ${nextMonday.toISOString().slice(0, 10)}`,
     ))
     .orderBy(asc(ffhbMatch.date))
 
@@ -169,9 +181,9 @@ export const getWeekendNews = createServerFn().handler(() =>
   const history = allHistory.filter(m => !weekendIds.has(m.matchId))
 
   const { generateWeekendSummary } = await import('../lib/ai')
-  const weekendSummary = await generateWeekendSummary(weekendMatches, history)
+  const weekendSummary = await generateWeekendSummary(weekendMatches, history, weekendLabel)
 
-  return { weekendMatches, weekendSummary }
+  return { weekendMatches, weekendSummary, weekendLabel }
 }, TTL.LIVE)
 )
 

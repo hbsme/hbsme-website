@@ -7,6 +7,10 @@ import { createServer } from 'node:http'
 import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import { join, dirname } from 'node:path'
+import { config as dotenvConfig } from 'dotenv'
+
+// Charger les variables d'environnement depuis .env
+dotenvConfig()
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3010

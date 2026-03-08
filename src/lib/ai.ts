@@ -85,7 +85,7 @@ function groupByWeekend(matches: Match[]): Array<{ label: string; matches: Match
 
 // ─── prompt ──────────────────────────────────────────────────────────────────
 
-function buildPrompt(currentWeek: Match[], history: Match[]): string {
+function buildPrompt(currentWeek: Match[], history: Match[], weekendLabel: string): string {
   const historyGroups = groupByWeekend(history)
   const currentGroups = groupByWeekend(currentWeek)
 
@@ -99,15 +99,15 @@ function buildPrompt(currentWeek: Match[], history: Match[]): string {
 
   const hasCurrentWeek = currentGroups.length > 0
   const currentSection = hasCurrentWeek
-    ? `## Résultats de ce week-end\n\n` +
+    ? `## Résultats du ${weekendLabel}\n\n` +
       currentGroups
         .map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`)
         .join('\n\n')
-    : '## Ce week-end\n\nHBSME n\'avait pas de rencontres ce week-end.'
+    : `## ${weekendLabel}\n\nHBSME n'avait pas de rencontres ce week-end.`
 
   const taskInstruction = hasCurrentWeek
-    ? 'Rédige maintenant le résumé d\'actu du week-end dernier, en tenant compte du contexte des semaines précédentes si pertinent.'
-    : 'Il n\'y avait pas de match ce week-end. Rédige un court message (2-3 phrases) qui mentionne cette pause, et fait un bref rappel positif des résultats récents si pertinent.'
+    ? `Rédige maintenant le résumé d'actu du ${weekendLabel}, en tenant compte du contexte des semaines précédentes si pertinent.`
+    : `Il n'y avait pas de match le ${weekendLabel}. Rédige un court message (2-3 phrases) qui mentionne cette pause, et fait un bref rappel positif des résultats récents si pertinent.`
 
   return `Tu rédiges l'actu sportive du site web du Handball Saint-Médard d'Eyrans (HBSME), un club familial de Gironde.
 
@@ -150,6 +150,7 @@ function fallbackText(matches: Match[]): string {
 export async function generateWeekendSummary(
   currentWeek: Match[],
   history: Match[],
+  weekendLabel: string,
 ): Promise<string> {
   if (currentWeek.length === 0 && history.length === 0) {
     return fallbackText([])
@@ -182,7 +183,7 @@ export async function generateWeekendSummary(
   }
 
   try {
-    const prompt = buildPrompt(currentWeek, history)
+    const prompt = buildPrompt(currentWeek, history, weekendLabel)
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`
     const res = await fetch(url, {
       method: 'POST',
