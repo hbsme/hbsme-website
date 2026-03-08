@@ -40,13 +40,14 @@ function Section({ title, icon, children }: { title: string; icon: string; child
 
 // ─── Field helpers ─────────────────────────────────────────────────────────────
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-sm font-semibold text-gray-600">
         {label}{required && <span className="text-pink-600 ml-0.5">*</span>}
       </label>
       {children}
+      {error && <p className="text-xs text-red-600 mt-0.5 font-medium">⚠ {error}</p>}
     </div>
   )
 }
@@ -151,6 +152,7 @@ function InscriptionPage() {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
   const [resultFilename, setResultFilename] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   // ── Init signature_pad + resize ──
   useEffect(() => {
@@ -200,10 +202,60 @@ function InscriptionPage() {
     }
   }
 
+  // ── Validation ──
+  function validate(): boolean {
+    const errors: Record<string, string> = {}
+
+    if (!licencie.nom.trim()) errors.nom = 'Le nom est obligatoire.'
+    if (!licencie.prenom.trim()) errors.prenom = 'Le prénom est obligatoire.'
+    if (!licencie.sexe) errors.sexe = 'Veuillez indiquer le sexe.'
+    if (!licencie.dateNaissance) errors.dateNaissance = 'La date de naissance est obligatoire.'
+
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!licencie.email.trim()) {
+      errors.email = "L'email est obligatoire."
+    } else if (!emailRe.test(licencie.email)) {
+      errors.email = "Format d'email invalide."
+    }
+
+    // Au moins un téléphone valide (10 chiffres, espaces tolérés)
+    const cleanTel = (t: string) => t.replace(/[\s.\-]/g, '')
+    const telRe = /^0[1-9]\d{8}$/
+    const tel1 = cleanTel(licencie.telDomicile)
+    const tel2 = cleanTel(licencie.telPortable)
+    if (!tel1 && !tel2) {
+      errors.telephone = 'Au moins un numéro de téléphone est obligatoire.'
+    } else if (tel1 && !telRe.test(tel1)) {
+      errors.telDomicile = 'Format invalide (10 chiffres attendus, ex: 0556123456).'
+    } else if (tel2 && !telRe.test(tel2)) {
+      errors.telPortable = 'Format invalide (10 chiffres attendus, ex: 0612345678).'
+    }
+
+    // Adresse : doit contenir un code postal (5 chiffres consécutifs ou avec espace)
+    const cpRe = /\d{2}[ ]?\d{3}/
+    if (!licencie.adresse.trim()) {
+      errors.adresse = "L'adresse est obligatoire."
+    } else if (!cpRe.test(licencie.adresse)) {
+      errors.adresse = "L'adresse doit contenir un code postal (ex: 33650 ou 33 650)."
+    }
+
+    setFormErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      // Scroll vers la première erreur
+      setTimeout(() => {
+        const el = document.querySelector('[data-error]')
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 50)
+      return false
+    }
+    return true
+  }
+
   // ── Submit ──
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     console.log('[inscription] handleSubmit called, charteAccepted:', charteAccepted)
+    if (!validate()) return
     if (!charteAccepted) {
       alert('Vous devez accepter la charte du club.')
       return
@@ -289,23 +341,23 @@ function InscriptionPage() {
           {/* ── Section 1 : Licencié ── */}
           <Section title="Informations licencié" icon="🏐">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Nom" required>
-                <input className={inputClass} required value={licencie.nom}
-                  onChange={e => setLicencie(l => ({ ...l, nom: e.target.value }))} />
+              <Field label="Nom" required error={formErrors.nom}>
+                <input className={inputClass} value={licencie.nom} data-error={formErrors.nom ? 'true' : undefined}
+                  onChange={e => { setLicencie(l => ({ ...l, nom: e.target.value })); setFormErrors(fe => ({ ...fe, nom: '' })) }} />
               </Field>
-              <Field label="Prénom" required>
-                <input className={inputClass} required value={licencie.prenom}
-                  onChange={e => setLicencie(l => ({ ...l, prenom: e.target.value }))} />
+              <Field label="Prénom" required error={formErrors.prenom}>
+                <input className={inputClass} value={licencie.prenom} data-error={formErrors.prenom ? 'true' : undefined}
+                  onChange={e => { setLicencie(l => ({ ...l, prenom: e.target.value })); setFormErrors(fe => ({ ...fe, prenom: '' })) }} />
               </Field>
 
-              <Field label="Sexe" required>
+              <Field label="Sexe" required error={formErrors.sexe}>
                 <div className="flex gap-6 items-center mt-1">
                   {(['M', 'F'] as const).map(s => (
                     <label key={s} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
                       <input
                         type="radio" name="sexe" value={s}
                         checked={licencie.sexe === s}
-                        onChange={() => setLicencie(l => ({ ...l, sexe: s }))}
+                        onChange={() => { setLicencie(l => ({ ...l, sexe: s })); setFormErrors(fe => ({ ...fe, sexe: '' })) }}
                         className="accent-pink-600"
                       />
                       {s === 'M' ? 'Masculin' : 'Féminin'}
@@ -329,11 +381,11 @@ function InscriptionPage() {
                 </label>
               </Field>
 
-              <Field label="Date de naissance" required>
+              <Field label="Date de naissance" required error={formErrors.dateNaissance}>
                 <input
-                  type="date" className={inputClass} required
+                  type="date" className={inputClass}
                   value={licencie.dateNaissance}
-                  onChange={e => setLicencie(l => ({ ...l, dateNaissance: e.target.value }))}
+                  onChange={e => { setLicencie(l => ({ ...l, dateNaissance: e.target.value })); setFormErrors(fe => ({ ...fe, dateNaissance: '' })) }}
                 />
               </Field>
 
@@ -342,19 +394,19 @@ function InscriptionPage() {
                   onChange={e => setLicencie(l => ({ ...l, lieuNaissance: e.target.value }))} />
               </Field>
 
-              <Field label="Tél domicile">
-                <input type="tel" className={inputClass} value={licencie.telDomicile}
-                  onChange={e => setLicencie(l => ({ ...l, telDomicile: e.target.value }))} />
+              <Field label="Tél domicile" error={formErrors.telDomicile || formErrors.telephone}>
+                <input type="tel" className={inputClass} value={licencie.telDomicile} placeholder="0556123456"
+                  onChange={e => { setLicencie(l => ({ ...l, telDomicile: e.target.value })); setFormErrors(fe => ({ ...fe, telDomicile: '', telephone: '' })) }} />
               </Field>
 
-              <Field label="Tél portable">
-                <input type="tel" className={inputClass} value={licencie.telPortable}
-                  onChange={e => setLicencie(l => ({ ...l, telPortable: e.target.value }))} />
+              <Field label="Tél portable" error={formErrors.telPortable || (!formErrors.telDomicile ? formErrors.telephone : '')}>
+                <input type="tel" className={inputClass} value={licencie.telPortable} placeholder="0612345678"
+                  onChange={e => { setLicencie(l => ({ ...l, telPortable: e.target.value })); setFormErrors(fe => ({ ...fe, telPortable: '', telephone: '' })) }} />
               </Field>
 
-              <Field label="Email">
+              <Field label="Email" required error={formErrors.email}>
                 <input type="email" className={inputClass} value={licencie.email}
-                  onChange={e => setLicencie(l => ({ ...l, email: e.target.value }))} />
+                  onChange={e => { setLicencie(l => ({ ...l, email: e.target.value })); setFormErrors(fe => ({ ...fe, email: '' })) }} />
               </Field>
 
               <Field label="N° Sécurité Sociale">
@@ -364,9 +416,9 @@ function InscriptionPage() {
             </div>
 
             <div className="mt-4">
-              <Field label="Adresse">
-                <textarea className={textareaClass} value={licencie.adresse}
-                  onChange={e => setLicencie(l => ({ ...l, adresse: e.target.value }))} />
+              <Field label="Adresse (avec code postal)" required error={formErrors.adresse}>
+                <textarea className={textareaClass} value={licencie.adresse} placeholder={"29 chemin du Cabernet\n33650 Saint-Médard d'Eyrans"}
+                  onChange={e => { setLicencie(l => ({ ...l, adresse: e.target.value })); setFormErrors(fe => ({ ...fe, adresse: '' })) }} />
               </Field>
             </div>
           </Section>
