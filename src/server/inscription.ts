@@ -302,8 +302,15 @@ export const submitInscription = createServerFn({ method: 'POST' })
     // ── Telegram notification ──────────────────────────────────────────────────
     const BOT_TOKEN = '991040556:AAHWfiY-uSdYSeRSkij3dBaBRnpdu5rtyFo'
     const CHAT_ID = '-543770100'
-    const pdfUrl = `https://hbsme.fr/inscription/data/pdf/${filename}.pdf`
-    const tgMsg = `Nouveau fichier d'inscription : ${filename}.pdf\n${pdfUrl}`
+    const tgMsg = [
+      '🤾 Nouvelle inscription HBSME',
+      '',
+      `Nom : ${licencie.nom}`,
+      `Prénom : ${licencie.prenom}`,
+      `Date de naissance : ${licencie.dateNaissance}`,
+      `Catégorie : ${autorisation.authCat || '-'}`,
+      `Mineur : ${licencie.mineur ? 'Oui' : 'Non'}`,
+    ].join('\n')
 
     try {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -317,6 +324,7 @@ export const submitInscription = createServerFn({ method: 'POST' })
 
     // ── Email via Birdie Mail ──────────────────────────────────────────────────
     try {
+      const pdfBase64 = Buffer.from(pdfBytes).toString('base64')
       await fetch('https://mx.birdie-mail.com/api/v1/send', {
         method: 'POST',
         headers: {
@@ -326,9 +334,14 @@ export const submitInscription = createServerFn({ method: 'POST' })
         body: JSON.stringify({
           from: 'no-reply@hbsme.fr',
           to: ['christophe.maillot@gmail.com'],
-          subject: `Nouvelle inscription : ${filename}.pdf`,
-          text: `Une nouvelle inscription a été reçue.\n\nFichier : ${filename}.pdf\nLien : ${pdfUrl}`,
-          html: `<p>Une nouvelle inscription a été reçue.</p><p>Fichier : <strong>${filename}.pdf</strong></p><p><a href="${pdfUrl}">Télécharger le PDF</a></p>`,
+          subject: `Nouvelle inscription : ${licencie.prenom} ${licencie.nom}`,
+          text: `Nouvelle inscription reçue.\n\nNom : ${licencie.nom}\nPrénom : ${licencie.prenom}\nDate de naissance : ${licencie.dateNaissance}\nCatégorie : ${autorisation.authCat || '-'}`,
+          html: `<p>Nouvelle inscription reçue.</p><ul><li><strong>Nom :</strong> ${licencie.nom}</li><li><strong>Prénom :</strong> ${licencie.prenom}</li><li><strong>Date de naissance :</strong> ${licencie.dateNaissance}</li><li><strong>Catégorie :</strong> ${autorisation.authCat || '-'}</li></ul>`,
+          attachments: [{
+            filename: `${filename}.pdf`,
+            content: pdfBase64,
+            content_type: 'application/pdf',
+          }],
         }),
       })
     } catch (_err) {
