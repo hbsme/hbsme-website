@@ -712,7 +712,7 @@ function Home() {
       </section>
 
       {/* ── Résultats récents ─────────────────────────────────────── */}
-      <section id="resultats" className="bg-gray-50 py-16 border-t border-gray-100">
+      <section id="resultats" className="bg-gray-100 py-16 border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <p className="text-xs font-bold tracking-widest uppercase text-pink-600 mb-2">Résultats</p>
           <h2 className="text-2xl font-black text-gray-900 mb-6">Derniers résultats</h2>
@@ -744,7 +744,7 @@ function Home() {
       </section>
 
       {/* ── Classements ───────────────────────────────────────────── */}
-      <section id="classements" className="bg-gray-50 py-16 border-t border-gray-100">
+      <section id="classements" className="bg-gray-100 py-16 border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <p className="text-xs font-bold tracking-widest uppercase text-pink-600 mb-2">Classements</p>
           <h2 className="text-2xl font-black text-gray-900 mb-2">Nos équipes</h2>
