@@ -674,9 +674,6 @@ function Home() {
                 <p className="text-xs font-bold tracking-widest uppercase text-pink-600 mb-2">Ce week-end</p>
                 <div className="flex items-center gap-3 mb-1">
                   <h2 className="text-2xl font-black text-gray-900">Actu du week-end</h2>
-                  <span className="text-xs text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white">
-                    ✦ Résumé automatique
-                  </span>
                 </div>
                 <p className="text-sm text-gray-400 capitalize">{weekendLabel}</p>
               </div>

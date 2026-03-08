@@ -27,6 +27,26 @@ type CacheEntry = {
 
 const CLUB = "HANDBALL SAINT MEDARD D'EYRANS"
 
+
+function formatCompetition(competition: string | null): string {
+  if (!competition) return 'Championnat'
+  const c = competition.toUpperCase()
+  if (c.includes('+16') && (c.includes('MASCULIN'))) return 'Séniors Garçons'
+  if (c.includes('+16') && (c.includes('FEMININ'))) return 'Séniors Filles'
+  if (c.includes('U18') && c.includes('MASCULIN')) return '18G'
+  if (c.includes('U18') && c.includes('FEMININ')) return '18F'
+  if (c.includes('U16') && c.includes('MASCULIN')) return '16G'
+  if (c.includes('U16') && c.includes('FEMININ')) return '16F'
+  if (c.includes('U15') && c.includes('MASCULIN')) return '15G'
+  if (c.includes('U15') && c.includes('FEMININ')) return '15F'
+  if (c.includes('U13') && c.includes('MASCULIN')) return '13G'
+  if (c.includes('U13') && c.includes('FEMININ')) return '13F'
+  if (c.includes('U11') && c.includes('MASCULIN')) return '11G'
+  if (c.includes('U11') && c.includes('FEMININ')) return '11F'
+  if (c.includes('U9') || c.includes('MINIPOUSSIN') || c.includes('MINI')) return 'Mini'
+  return competition
+}
+
 function isHome(team1: string | null): boolean {
   return !!team1?.startsWith(CLUB.substring(0, 15))
 }
@@ -51,7 +71,7 @@ function formatMatch(m: Match): string {
   const oppScore = Number(home ? m.score2 : m.score1)
   const opponent = (home ? m.team2 : m.team1) ?? 'Adversaire'
   const domExt = home ? 'dom.' : 'ext.'
-  const competition = m.competition ?? 'Championnat'
+  const competition = formatCompetition(m.competition)
   const result = matchResult(m.score1, m.score2, m.team1)
   const resultFr = result === 'win' ? 'victoire' : result === 'loss' ? 'défaite' : 'nul'
   return `  • ${competition} (${domExt}) : ${clubScore}–${oppScore} face à ${opponent} → ${resultFr}`
@@ -119,7 +139,8 @@ function buildPrompt(currentWeek: Match[], history: Match[], weekendLabel: strin
 - **Jamais de formule comme "HBSME a écrasé", "défaite sévère", "belle correction"**
 - Langue : français, style fluide et chaleureux, pas de liste, pas de bullet points
 - Longueur : 3 à 5 phrases, réparties en 2 paragraphes séparés par une ligne vide (\`\`\\n\\n\`\`)
-- Formate avec du markdown minimal : catégories en gras (ex : **U11**, **U13**) et scores en italique (ex : *35-25*)
+- Formate avec du markdown minimal : catégories en gras (ex : **11G**, **13F**, **18G**, **Séniors Garçons**, **Séniors Filles**) et scores en italique (ex : *35-25*)
+- Utilise uniquement ces formats de catégories : 11G/11F, 13G/13F, 15G/15F, 16G/16F, 18G/18F, Séniors Garçons, Séniors Filles
 - Illustre tes remarques par des scores concrets quand c'est pertinent
 - Termine obligatoirement par : "Allez Saint-Médard d'Eyrans ! 🤾"
 
