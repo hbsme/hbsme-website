@@ -37,36 +37,78 @@ export function isHome(team1: string): boolean {
 
 export const getUpcomingMatches = createServerFn().handler(() =>
   withCache('upcoming-matches', async () => {
-  const now = new Date()
-  // Fin de la semaine courante (dimanche 23:59:59) — on garde les matchs de la semaine
-  // jusqu'au dimanche soir avant de passer à la semaine suivante.
-  const endOfWeek = new Date(now)
-  const dayOfWeek = now.getDay() // 0=dim, 1=lun, ..., 6=sam
-  const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
-  endOfWeek.setDate(endOfWeek.getDate() + daysUntilSunday)
-  endOfWeek.setHours(23, 59, 59, 999)
+  // Week-end courant : samedi + dimanche proches
+  // Le dimanche, on inclut le samedi précédent (matchs sans score = non encore saisis)
+  const nowParis = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
+  const dow = nowParis.getDay() // 0=dim, 1=lun, ..., 6=sam
+
+  // Samedi du week-end courant :
+  // - Dimanche (0) → hier (sam de ce WE)
+  // - Samedi (6)   → aujourd'hui
+  // - Lun–Ven (1–5) → prochain samedi
+  const daysToSaturday = dow === 0 ? -1 : (6 - dow)
+  const currentSaturday = new Date(nowParis)
+  currentSaturday.setDate(nowParis.getDate() + daysToSaturday)
+  currentSaturday.setHours(0, 0, 0, 0)
+  const nextMonday = new Date(currentSaturday)
+  nextMonday.setDate(currentSaturday.getDate() + 2) // sam + 2 = lundi (exclusif)
+
+  const weekendLabel = `week-end du ${currentSaturday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${new Date(currentSaturday.getTime() + 86400000).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`
 
   const baseWhere = and(
     isNull(ffhbMatch.score1),
     isNotNull(ffhbMatch.date),
     gt(ffhbMatch.date, EPOCH_FILTER),
-    gt(ffhbMatch.date, now),
   )
-  // Essayer d'abord les matchs de la semaine courante
-  const thisWeek = await db
+
+  // Matchs du week-end courant (sans score, quel que soit passé/futur dans la fenêtre sam–dim)
+  const thisWeekend = await db
     .select()
     .from(ffhbMatch)
-    .where(and(baseWhere, sql`${ffhbMatch.date} <= ${endOfWeek}`))
+    .where(and(
+      baseWhere,
+      sql`${ffhbMatch.date}::date >= ${currentSaturday.toISOString().slice(0, 10)}`,
+      sql`${ffhbMatch.date}::date < ${nextMonday.toISOString().slice(0, 10)}`,
+    ))
     .orderBy(asc(ffhbMatch.date))
-    .limit(8)
-  if (thisWeek.length > 0) return thisWeek
-  // Aucun match cette semaine → afficher la semaine suivante
-  return db
+    .limit(20)
+
+  if (thisWeekend.length > 0) return { matches: thisWeekend, weekendLabel }
+
+  // Aucun match ce week-end → afficher le week-end suivant
+  const nextMatch = await db
     .select()
     .from(ffhbMatch)
-    .where(baseWhere)
+    .where(and(baseWhere, sql`${ffhbMatch.date}::date >= ${nextMonday.toISOString().slice(0, 10)}`))
     .orderBy(asc(ffhbMatch.date))
-    .limit(8)
+    .limit(1)
+
+  if (!nextMatch[0]) return { matches: [], weekendLabel }
+
+  // Trouver le week-end du prochain match
+  const nextDate = new Date(nextMatch[0].date!)
+  const nextDow = nextDate.getDay()
+  const daysToNextSat = nextDow === 0 ? -1 : (6 - nextDow)
+  const nextSaturday = new Date(nextDate)
+  nextSaturday.setDate(nextDate.getDate() + daysToNextSat)
+  nextSaturday.setHours(0, 0, 0, 0)
+  const nextNextMonday = new Date(nextSaturday)
+  nextNextMonday.setDate(nextSaturday.getDate() + 2)
+
+  const nextWeekendLabel = `week-end du ${nextSaturday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${new Date(nextSaturday.getTime() + 86400000).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`
+
+  const nextWeekend = await db
+    .select()
+    .from(ffhbMatch)
+    .where(and(
+      baseWhere,
+      sql`${ffhbMatch.date}::date >= ${nextSaturday.toISOString().slice(0, 10)}`,
+      sql`${ffhbMatch.date}::date < ${nextNextMonday.toISOString().slice(0, 10)}`,
+    ))
+    .orderBy(asc(ffhbMatch.date))
+    .limit(20)
+
+  return { matches: nextWeekend, weekendLabel: nextWeekendLabel }
 }, TTL.LIVE)
 )
 

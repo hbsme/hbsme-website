@@ -38,7 +38,8 @@ export const Route = createFileRoute('/')({
         getPartenaires(),
       ])
     const { weekendMatches, weekendSummary, weekendLabel } = weekendNews
-    return { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, weekendLabel, partenaires }
+    const { matches: upcomingMatches, weekendLabel: upcomingLabel } = upcoming
+    return { upcomingMatches, upcomingLabel, results, teamOverview, birthdays, weekendMatches, weekendSummary, weekendLabel, partenaires }
   },
 })
 
@@ -617,10 +618,10 @@ function AirportBoard({ label, matches, dark = false }: { label: string; matches
 // ─── main page ────────────────────────────────────────────────────────────────
 
 function Home() {
-  const { upcoming, results, teamOverview, birthdays, weekendMatches, weekendSummary, weekendLabel, partenaires } = Route.useLoaderData()
+  const { upcomingMatches, upcomingLabel, results, teamOverview, birthdays, weekendMatches, weekendSummary, weekendLabel, partenaires } = Route.useLoaderData()
 
   const sortedResults = [...results].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
-  const sortedUpcoming = [...upcoming].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
+  const sortedUpcoming = [...upcomingMatches].sort((a, b) => categorySortKey(a.competition) - categorySortKey(b.competition))
   const weekendText = weekendSummary
 
   return (
@@ -723,8 +724,11 @@ function Home() {
 
         {/* Prochains matchs */}
         <section id="matchs">
-          <h2 className="text-2xl font-black text-gray-900 mb-2">Prochains matchs</h2>
-          <p className="text-gray-500 mb-6 max-w-2xl">Prêts à vibrer au rythme du handball ? Voici le programme du week-end pour toutes nos équipes. Venez encourager les nôtres — entrée libre pour tous !</p>
+          <div className="mb-6">
+            <h2 className="text-2xl font-black text-gray-900 mb-1">Prochains matchs</h2>
+            <p className="text-sm text-gray-400 capitalize mb-2">{upcomingLabel}</p>
+            <p className="text-gray-500 max-w-2xl">Prêts à vibrer au rythme du handball ? Voici le programme du week-end pour toutes nos équipes. Venez encourager les nôtres — entrée libre pour tous !</p>
+          </div>
           {sortedUpcoming.length === 0 ? (
             <p className="text-gray-400">Aucun match à venir renseigné.</p>
           ) : (
