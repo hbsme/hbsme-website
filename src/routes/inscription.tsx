@@ -449,7 +449,6 @@ function InscriptionPage() {
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
-                required
                 checked={charteAccepted}
                 onChange={e => setCharteAccepted(e.target.checked)}
                 className="accent-pink-600 w-4 h-4 mt-0.5 shrink-0"
@@ -465,7 +464,7 @@ function InscriptionPage() {
           <Section title="Autorisations parentales" icon="✍️">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Je soussigné(e), M/Mme" required>
-                <input className={inputClass} required value={autorisation.authName}
+                <input className={inputClass} value={autorisation.authName}
                   onChange={e => setAutorisation(a => ({ ...a, authName: e.target.value }))} />
               </Field>
               <Field label="Représentant légal de">
