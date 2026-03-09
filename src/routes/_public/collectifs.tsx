@@ -91,7 +91,7 @@ function CollectifsPage() {
                       <div key={i} className="flex items-center gap-3">
                         {coach.photo ? (
                           <img
-                            src={`/users/${coach.photo}`}
+                            src={`/${coach.photo}`}
                             alt={`${coach.prenom} ${coach.nom}`}
                             className="w-8 h-8 rounded-full object-cover border-2 border-pink-100"
                           />
