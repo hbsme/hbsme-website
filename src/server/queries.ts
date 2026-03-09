@@ -364,9 +364,10 @@ export const getCollectifs = createServerFn().handler(() =>
       coachPhoto: hbsmeUser.photo,
       coachRole: collectifCoach.role,
       coachSortOrder: collectifCoach.sortOrder,
+      coachPrincipal: collectifCoach.principal,
     })
     .from(collectifTable)
-    .leftJoin(collectifCoach, eq(collectifCoach.collectifId, collectifTable.id))
+    .leftJoin(collectifCoach, and(eq(collectifCoach.collectifId, collectifTable.id), eq(collectifCoach.principal, true)))
     .leftJoin(hbsmeUser, eq(hbsmeUser.id, collectifCoach.userId))
     .where(and(eq(collectifTable.saison, saison), eq(collectifTable.active, true)))
     .orderBy(collectifTable.sortOrder, collectifCoach.sortOrder)

@@ -1,4 +1,5 @@
-import { pgTable, serial, varchar, integer, timestamp, date, boolean, text } from 'drizzle-orm/pg-core'
+import { pgTable, serial, varchar, integer, timestamp, date, boolean, text, json } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 
 export const licencee = pgTable('licencee', {
   id: serial('id').primaryKey(),
@@ -115,12 +116,32 @@ export const hbsmeUser = pgTable('hbsme_user', {
   id: serial('id').primaryKey(),
   nom: varchar('nom', { length: 100 }).notNull(),
   prenom: varchar('prenom', { length: 100 }).notNull(),
-  email: varchar('email', { length: 200 }).notNull().unique(),
+  email: varchar('email', { length: 200 }).unique(),
   passwordHash: varchar('password_hash', { length: 255 }),
   photo: varchar('photo', { length: 255 }),
   role: varchar('role', { length: 50 }).notNull().default('viewer'),
+  licenceeNumber: varchar('licenceeNumber', { length: 64 }).references(() => licencee.licenceeNumber),
+  permissions: text('permissions').array().notNull().default(sql`'{}'`),
+  fonctionCa: varchar('fonctionCa', { length: 100 }),
   active: boolean('active').default(true),
   createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const hbsmeOtp = pgTable('hbsme_otp', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 200 }).notNull(),
+  code: varchar('code', { length: 6 }).notNull(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  used: boolean('used').notNull().default(false),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+})
+
+export const hbsmeSession = pgTable('hbsme_session', {
+  id: serial('id').primaryKey(),
+  userId: integer('userId').notNull().references(() => hbsmeUser.id, { onDelete: 'cascade' }),
+  token: varchar('token', { length: 64 }).notNull().unique(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
 })
 
 export const collectif = pgTable('collectif', {
@@ -139,4 +160,18 @@ export const collectifCoach = pgTable('collectif_coach', {
   userId: integer('user_id').notNull().references(() => hbsmeUser.id, { onDelete: 'cascade' }),
   role: varchar('role', { length: 100 }).default('Entraîneur'),
   sortOrder: integer('sort_order').default(0),
+  principal: boolean('principal').notNull().default(true),
+})
+
+export const hbsmeAudit = pgTable('hbsme_audit', {
+  id:          serial('id').primaryKey(),
+  userId:      integer('user_id').references(() => hbsmeUser.id, { onDelete: 'set null' }),
+  userLabel:   varchar('user_label', { length: 200 }),
+  action:      varchar('action', { length: 60 }).notNull(),
+  targetType:  varchar('target_type', { length: 50 }),
+  targetId:    integer('target_id'),
+  targetLabel: varchar('target_label', { length: 200 }),
+  detail:      json('detail'),
+  ip:          varchar('ip', { length: 60 }),
+  createdAt:   timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
