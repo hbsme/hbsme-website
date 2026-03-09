@@ -196,16 +196,19 @@ export const getWeekendNews = createServerFn().handler(() =>
   nextMonday.setDate(lastSunday.getDate() + 1)
   const weekendLabel = `week-end du ${lastSaturday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${lastSunday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`
 
-  // Matchs du week-end précédent (samedi + dimanche)
-  const weekendMatches = await db
+  // Tous les matchs du week-end (avec ET sans scores) pour connaître le total
+  const allWeekendMatches = await db
     .select()
     .from(ffhbMatch)
     .where(and(
-      isNotNull(ffhbMatch.score1),
       sql`${ffhbMatch.date}::date >= ${lastSaturday.toISOString().slice(0, 10)}`,
       sql`${ffhbMatch.date}::date < ${nextMonday.toISOString().slice(0, 10)}`,
     ))
     .orderBy(asc(ffhbMatch.date))
+
+  // Séparation scores disponibles / scores manquants
+  const weekendMatches = allWeekendMatches.filter(m => m.score1 != null)
+  const missingMatches = allWeekendMatches.filter(m => m.score1 == null)
 
   // Historique 8 semaines pour contexte IA (excluant le week-end en cours)
   const allHistory = await db
@@ -223,7 +226,7 @@ export const getWeekendNews = createServerFn().handler(() =>
   const history = allHistory.filter(m => !weekendIds.has(m.matchId))
 
   const { generateWeekendSummary } = await import('../lib/ai')
-  const weekendSummary = await generateWeekendSummary(weekendMatches, history, weekendLabel)
+  const weekendSummary = await generateWeekendSummary(weekendMatches, missingMatches, history, weekendLabel)
 
   return { weekendMatches, weekendSummary, weekendLabel }
 }, TTL.LIVE)
@@ -299,6 +302,30 @@ export const getMembresCa = createServerFn().handler(() =>
     .where(eq(membreCa.active, true))
     .orderBy(asc(membreCa.sortOrder), asc(membreCa.nom))
 }, TTL.SEASON)
+)
+
+
+export const getMembresCaFromUsers = createServerFn().handler(() =>
+  withCache('membres-ca-users', async () => {
+    const rows = await db
+      .select({
+        id: hbsmeUser.id,
+        prenom: hbsmeUser.prenom,
+        nom: hbsmeUser.nom,
+        fonctionCa: hbsmeUser.fonctionCa,
+        photo: hbsmeUser.photo,
+      })
+      .from(hbsmeUser)
+      .where(isNotNull(hbsmeUser.fonctionCa))
+      .orderBy(asc(hbsmeUser.id))
+    return rows.map(r => ({
+      id: r.id,
+      fullName: r.prenom + ' ' + r.nom,
+      fonctionCa: r.fonctionCa!,
+      photo: r.photo,
+      isBureau: !r.fonctionCa!.toLowerCase().startsWith('administrateur') && !r.fonctionCa!.toLowerCase().startsWith('administratrice'),
+    }))
+  }, TTL.SEASON)
 )
 
 // ─── Collectifs ───────────────────────────────────────────────────────────────
@@ -511,19 +538,14 @@ export const getLastWeekResults = createServerFn()
   .handler(async (ctx): Promise<StudioLastWeek> => {
     const today = ctx.data
     const d = new Date(today)
-    const dow = d.getDay()
-    let satOffset = 0
-    switch (dow) {
-      case 0: satOffset = -1; break
-      case 1: satOffset = -6; break
-      case 2: satOffset = -7; break
-      case 3: satOffset = -8; break
-      case 4: satOffset = -9; break
-      case 5: satOffset = -10; break
-      case 6: satOffset = 0; break
-    }
-    const sat = new Date(d); sat.setDate(d.getDate() + satOffset)
-    const sun = new Date(d); sun.setDate(d.getDate() + satOffset + 1)
+    const dow = d.getDay() // 0=dim, 1=lun, ..., 6=sam
+    // Lundi de la semaine courante
+    const daysToMonday = dow === 0 ? 6 : dow - 1
+    const monday = new Date(d)
+    monday.setDate(d.getDate() - daysToMonday)
+    // Weekend précédent = sam et dim avant ce lundi
+    const sat = new Date(monday); sat.setDate(monday.getDate() - 2)
+    const sun = new Date(monday); sun.setDate(monday.getDate() - 1)
     const satStr = sat.toISOString().split('T')[0]
     const sunStr = sun.toISOString().split('T')[0]
     const [satMatches, sunMatches] = await Promise.all([

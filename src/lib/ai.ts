@@ -1,4 +1,3 @@
-
 // ─── types ───────────────────────────────────────────────────────────────────
 
 type Match = {
@@ -18,7 +17,6 @@ type CacheEntry = {
 }
 
 // ─── cache ───────────────────────────────────────────────────────────────────
-
 
 
 
@@ -77,6 +75,14 @@ function formatMatch(m: Match): string {
   return `  • ${competition} (${domExt}) : ${clubScore}–${oppScore} face à ${opponent} → ${resultFr}`
 }
 
+function formatMatchPending(m: Match): string {
+  const home = isHome(m.team1)
+  const opponent = (home ? m.team2 : m.team1) ?? 'Adversaire'
+  const domExt = home ? 'dom.' : 'ext.'
+  const competition = formatCompetition(m.competition)
+  return `  • ${competition} (${domExt}) face à ${opponent} → score en attente`
+}
+
 function formatDate(raw: Date | string | null): string {
   if (!raw) return '?'
   const d = new Date(raw)
@@ -105,9 +111,16 @@ function groupByWeekend(matches: Match[]): Array<{ label: string; matches: Match
 
 // ─── prompt ──────────────────────────────────────────────────────────────────
 
-function buildPrompt(currentWeek: Match[], history: Match[], weekendLabel: string): string {
+function buildPrompt(
+  scoredMatches: Match[],
+  missingMatches: Match[],
+  history: Match[],
+  weekendLabel: string,
+): string {
   const historyGroups = groupByWeekend(history)
-  const currentGroups = groupByWeekend(currentWeek)
+  const currentGroups = groupByWeekend(scoredMatches)
+  const isPartial = missingMatches.length > 0
+  const hasScored = scoredMatches.length > 0
 
   const historySection =
     historyGroups.length > 0
@@ -117,17 +130,32 @@ function buildPrompt(currentWeek: Match[], history: Match[], weekendLabel: strin
           .join('\n\n')
       : ''
 
-  const hasCurrentWeek = currentGroups.length > 0
-  const currentSection = hasCurrentWeek
-    ? `## Résultats du ${weekendLabel}\n\n` +
-      currentGroups
-        .map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`)
-        .join('\n\n')
-    : `## ${weekendLabel}\n\nHBSME n'avait pas de rencontres ce week-end.`
+  let currentSection: string
+  let taskInstruction: string
 
-  const taskInstruction = hasCurrentWeek
-    ? `Rédige maintenant le résumé d'actu du ${weekendLabel}, en tenant compte du contexte des semaines précédentes si pertinent.`
-    : `Il n'y avait pas de match le ${weekendLabel}. Rédige un court message (2-3 phrases) qui mentionne cette pause, et fait un bref rappel positif des résultats récents si pertinent.`
+  if (!hasScored && !isPartial) {
+    // Pas de matchs du tout ce week-end
+    currentSection = `## ${weekendLabel}\n\nHBSME n'avait pas de rencontres ce week-end.`
+    taskInstruction = `Il n'y avait pas de match le ${weekendLabel}. Rédige un court message (2-3 phrases) qui mentionne cette pause, et fait un bref rappel positif des résultats récents si pertinent.`
+  } else if (isPartial) {
+    // Scores partiels : certains résultats disponibles, d'autres en attente
+    const scoredSection = hasScored
+      ? currentGroups.map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`).join('\n\n')
+      : '(aucun résultat encore disponible)'
+    const pendingList = missingMatches.map(formatMatchPending).join('\n')
+    currentSection =
+      `## Résultats disponibles du ${weekendLabel}\n\n${scoredSection}\n\n` +
+      `## Scores en attente\n\n${pendingList}`
+    taskInstruction =
+      `Tous les scores du ${weekendLabel} ne sont pas encore remontés : tu disposes de ${scoredMatches.length} résultat(s) sur ${scoredMatches.length + missingMatches.length} matchs disputés. ` +
+      `Rédige un texte qui présente les résultats connus, et mentionne naturellement que d'autres scores sont encore attendus — de façon légère, sans dramatiser. Même ton que d'habitude.`
+  } else {
+    // Tous les scores disponibles
+    currentSection =
+      `## Résultats du ${weekendLabel}\n\n` +
+      currentGroups.map(g => `### ${g.label}\n${g.matches.map(formatMatch).join('\n')}`).join('\n\n')
+    taskInstruction = `Rédige maintenant le résumé d'actu du ${weekendLabel}, en tenant compte du contexte des semaines précédentes si pertinent.`
+  }
 
   return `Tu rédiges l'actu sportive du site web du Handball Saint-Médard d'Eyrans (HBSME), un club familial de Gironde.
 
@@ -169,11 +197,21 @@ function fallbackText(matches: Match[]): string {
 // ─── main export ─────────────────────────────────────────────────────────────
 
 export async function generateWeekendSummary(
-  currentWeek: Match[],
+  scoredMatches: Match[],
+  missingMatches: Match[],
   history: Match[],
   weekendLabel: string,
 ): Promise<string> {
-  if (currentWeek.length === 0 && history.length === 0) {
+  const total = scoredMatches.length + missingMatches.length
+
+  // Cas 1 : des matchs ont eu lieu mais aucun score n'est encore disponible
+  if (total > 0 && scoredMatches.length === 0) {
+    const n = total
+    return `${n} rencontre${n > 1 ? 's ont été disputées' : ' a été disputée'} ce ${weekendLabel}, mais les scores ne sont pas encore disponibles. Revenez bientôt pour le compte-rendu complet ! Allez Saint-Médard d'Eyrans ! 🤾`
+  }
+
+  // Pas de matchs du tout, pas d'historique
+  if (total === 0 && history.length === 0) {
     return fallbackText([])
   }
 
@@ -184,8 +222,13 @@ export async function generateWeekendSummary(
   const { join } = await import('path')
   const CACHE_FILE = join(tmpdir(), 'hbsme_weekend_summary.json')
 
-  const all = [...currentWeek, ...history]
-  const stable = all.map(m => [m.matchId, m.score1, m.score2].join(":")).sort().join("|")
+  // Hash inclut les scores connus + la liste des matchs manquants (pour invalider le cache quand un score arrive)
+  const allForHash = [
+    ...scoredMatches.map(m => [m.matchId, m.score1, m.score2].join(':')),
+    ...missingMatches.map(m => [m.matchId, 'pending'].join(':')),
+    ...history.map(m => [m.matchId, m.score1, m.score2].join(':')),
+  ]
+  const stable = allForHash.sort().join('|')
   const hash = createHash('sha256').update(stable).digest('hex').slice(0, 16)
 
   let cached: CacheEntry | null = null
@@ -200,11 +243,12 @@ export async function generateWeekendSummary(
 
   const apiKey = process.env.GOOGLE_API_KEY
   if (!apiKey) {
-    return fallbackText(currentWeek)
+    return fallbackText(scoredMatches)
   }
 
   try {
-    const prompt = buildPrompt(currentWeek, history, weekendLabel)
+    // Cas 2 (partiel) et Cas 3 (complet) : même fonction, le prompt s'adapte
+    const prompt = buildPrompt(scoredMatches, missingMatches, history, weekendLabel)
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`
     const res = await fetch(url, {
       method: 'POST',
@@ -223,5 +267,5 @@ export async function generateWeekendSummary(
     console.error('[HBSME] AI summary error:', err)
   }
 
-  return fallbackText(currentWeek)
+  return fallbackText(scoredMatches)
 }
